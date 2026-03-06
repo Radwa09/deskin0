@@ -1,5 +1,18 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useAuth } from './context/AuthContext';
+import { Login } from './pages/auth/Login';
+import { Signup } from './pages/auth/Signup';
+import { ForgotPassword } from './pages/auth/ForgotPassword';
+import { DashboardLayout } from './pages/dashboard/DashboardLayout';
+import { DashboardOverview } from './pages/dashboard/Overview';
+import { DashboardHistory } from './pages/dashboard/History';
+import { DashboardProfile } from './pages/dashboard/Profile';
+import { DashboardSkinAnalysis } from './pages/dashboard/SkinAnalysis';
+import { AdminLayout } from './pages/admin/AdminLayout';
+import { AdminOverview } from './pages/admin/AdminOverview';
+import { AdminUsers } from './pages/admin/AdminUsers';
+import { AdminAnalytics } from './pages/admin/AdminAnalytics';
 import {
   Camera,
   Sparkles,
@@ -48,6 +61,7 @@ const itemVariants = {
 };
 
 export function App() {
+  const { isAuthenticated, isAdmin } = useAuth();
   const [currentPage, setCurrentPage] = useState('home');
   const [isScanning, setIsScanning] = useState(false);
   const [scanProgress, setScanProgress] = useState(0);
@@ -68,7 +82,7 @@ export function App() {
   // Basic Routing Logic
   useEffect(() => {
     const path = window.location.pathname.replace('/', '').toLowerCase();
-    const validPages = ['home', 'dashboard', 'ai', 'scan', 'routine', 'clinic', 'biometrics', 'technology', 'recommendations', 'support', 'results'];
+    const validPages = ['home', 'dashboard', 'dashboard/analysis', 'dashboard/history', 'dashboard/profile', 'dashboard/settings', 'admin', 'admin/users', 'admin/analytics', 'login', 'signup', 'forgot-password', 'ai', 'scan', 'routine', 'clinic', 'biometrics', 'technology', 'recommendations', 'support', 'results'];
     if (path && validPages.includes(path)) {
       setCurrentPage(path);
     }
@@ -170,8 +184,8 @@ export function App() {
             </motion.div>
 
             <div className="hidden lg:flex items-center gap-1 bg-stone-100/50 dark:bg-stone-900/50 p-1.5 rounded-full border border-stone-200/50 dark:border-stone-800/50">
-              {['Home', 'Dashboard', 'AI', 'Scan', 'Routine', 'Clinic', 'Biometrics', 'Technology', 'Recommendations'].map((item, i) => {
-                const pageId = item.toLowerCase();
+              {['Home', isAuthenticated ? (isAdmin ? 'Admin' : 'Dashboard') : 'Login', 'Skin Analysis', 'AI', 'Routine', 'Clinic'].map((item, i) => {
+                const pageId = item === 'Skin Analysis' ? 'scan' : item === 'Login' ? 'login' : item.toLowerCase();
                 const isActive = currentPage === pageId || (currentPage === 'results' && pageId === 'scan');
                 return (
                   <motion.button
@@ -231,6 +245,31 @@ export function App() {
 
       <main className="max-w-7xl mx-auto px-6 lg:px-12 py-16 relative z-10">
         <AnimatePresence mode="wait">
+
+          {/* ================= AUTH PAGES ================= */}
+          {currentPage === 'login' && <Login key="login" onNavigate={navigate} />}
+          {currentPage === 'signup' && <Signup key="signup" onNavigate={navigate} />}
+          {currentPage === 'forgot-password' && <ForgotPassword key="forgot-password" onNavigate={navigate} />}
+
+          {/* ================= DASHBOARD PAGES ================= */}
+          {currentPage.startsWith('dashboard') && (
+            <DashboardLayout key="dashboard-layout" currentPath={currentPage} onNavigate={navigate}>
+              {currentPage === 'dashboard' && <DashboardOverview onNavigate={navigate} />}
+              {currentPage === 'dashboard/analysis' && <DashboardSkinAnalysis />}
+              {currentPage === 'dashboard/history' && <DashboardHistory />}
+              {currentPage === 'dashboard/profile' && <DashboardProfile />}
+              {currentPage === 'dashboard/settings' && <DashboardProfile />} {/* Reusing profile for mock settings */}
+            </DashboardLayout>
+          )}
+
+          {/* ================= ADMIN PAGES ================= */}
+          {currentPage.startsWith('admin') && (
+            <AdminLayout key="admin-layout" currentPath={currentPage} onNavigate={navigate}>
+              {currentPage === 'admin' && <AdminOverview />}
+              {currentPage === 'admin/users' && <AdminUsers />}
+              {currentPage === 'admin/analytics' && <AdminAnalytics />}
+            </AdminLayout>
+          )}
 
           {/* ================= HOME PAGE ================= */}
           {currentPage === 'home' && (
