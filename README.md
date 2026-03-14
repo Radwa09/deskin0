@@ -25,8 +25,8 @@ SkinE is a high-end, clinical-grade skincare analysis platform that leverages ad
 
 1. **Clone the repository**:
    ```bash
-   git clone https://github.com/Radwa09/SKKIN.git
-   cd SKKIN
+   git clone https://github.com/Radwa09/SkinEwithdetected.git
+   cd SkinEwithdetected
    ```
 
 2. **Install dependencies**:
