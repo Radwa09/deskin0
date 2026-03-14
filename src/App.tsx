@@ -9,6 +9,7 @@ import { DashboardOverview } from './pages/dashboard/Overview';
 import { DashboardHistory } from './pages/dashboard/History';
 import { DashboardProfile } from './pages/dashboard/Profile';
 import { DashboardSkinAnalysis } from './pages/dashboard/SkinAnalysis';
+import { FaceCapture } from './components/FaceCapture';
 import { AdminLayout } from './pages/admin/AdminLayout';
 import { AdminOverview } from './pages/admin/AdminOverview';
 import { AdminUsers } from './pages/admin/AdminUsers';
@@ -22,7 +23,6 @@ import {
   MapPin,
   ShoppingBag,
   ArrowRight,
-  Upload,
   Clock,
   ShieldCheck,
   Sun,
@@ -44,9 +44,7 @@ import {
 } from 'lucide-react';
 
 import auroraSerum from './assets/aurora_serum.png';
-import scanReady from './assets/scan_ready.png';
-import pharmacist1 from './assets/pharmacist_1.png';
-import pharmacist2 from './assets/pharmacist_2.png';
+
 
 // Animation variants
 const pageVariants = {
@@ -55,16 +53,11 @@ const pageVariants = {
   exit: { opacity: 0, y: -20, transition: { duration: 0.5 } }
 };
 
-const itemVariants = {
-  initial: { opacity: 0, y: 30 },
-  animate: { opacity: 1, y: 0, transition: { duration: 0.7, ease: "easeOut" as const } }
-};
+
 
 export function App() {
   const { isAuthenticated, isAdmin } = useAuth();
   const [currentPage, setCurrentPage] = useState('home');
-  const [isScanning, setIsScanning] = useState(false);
-  const [scanProgress, setScanProgress] = useState(0);
   const [showConsultModal, setShowConsultModal] = useState(false);
   const [activeTab, setActiveTab] = useState('morning');
   const [isDarkMode, setIsDarkMode] = useState(() => {
@@ -103,24 +96,7 @@ export function App() {
     setCurrentPage(page);
   };
 
-  useEffect(() => {
-    if (isScanning) {
-      const interval = setInterval(() => {
-        setScanProgress(Math.min((prev: number) => {
-          if (prev >= 100) {
-            clearInterval(interval);
-            setTimeout(() => {
-              setIsScanning(false);
-              navigate('results');
-            }, 800);
-            return 100;
-          }
-          return prev + 1;
-        }, 100)); // Ensure it cap at 100 just in case
-      }, 40);
-      return () => clearInterval(interval);
-    }
-  }, [isScanning]);
+
 
   const handleContactSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -138,38 +114,19 @@ export function App() {
     e.currentTarget.reset();
   };
 
-  const startScan = () => {
-    setScanProgress(0);
-    setIsScanning(true);
-  };
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-[#0F0D0C] text-[#4D4039] dark:text-stone-300 font-sans selection:bg-[#DECFC0] dark:selection:bg-[#4A3C31] selection:text-[#3B302B] dark:selection:text-white overflow-x-hidden relative transition-colors duration-500">
 
 
-      {/* Dynamic Background Elements */}
-      <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
-        <motion.div
-          animate={{ x: [0, 50, 0], y: [0, -60, 0], scale: [1, 1.1, 1] }}
-          transition={{ duration: 20, repeat: Infinity, ease: "easeInOut" }}
-          className="absolute -top-[10%] -left-[5%] w-[50%] h-[50%] rounded-full bg-stone-200/40 dark:bg-[#4A3C31]/10 blur-[130px]"
-        />
-        <motion.div
-          animate={{ x: [0, -50, 0], y: [0, 60, 0], scale: [1, 1.15, 1] }}
-          transition={{ duration: 25, repeat: Infinity, ease: "easeInOut" }}
-          className="absolute top-[30%] -right-[15%] w-[60%] h-[60%] rounded-full bg-stone-300/30 dark:bg-emerald-900/5 blur-[160px]"
-        />
-      </div>
+
 
       {/* NAVBAR */}
       <nav className="sticky top-0 z-50 transition-all duration-300">
-        <div className="absolute inset-0 bg-white/70 dark:bg-[#0F0D0C]/80 backdrop-blur-xl border-b border-stone-200 dark:border-stone-800" />
+        <div className="absolute inset-0 bg-white/95 dark:bg-[#0F0D0C]/95 border-b border-stone-200 dark:border-stone-800" />
         <div className="max-w-7xl mx-auto px-6 lg:px-12 relative">
           <div className="flex justify-between items-center h-24">
-            <motion.div
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              className="flex items-center gap-4 cursor-pointer"
+            <div className="flex items-center gap-4 cursor-pointer"
               onClick={() => navigate('home')}
             >
               <div className="w-12 h-12 bg-[#4A3C31] rounded-2xl flex items-center justify-center shadow-lg shadow-stone-900/10 rotate-3">
@@ -181,17 +138,14 @@ export function App() {
                 </span>
                 <span className="text-[10px] tracking-[0.2em] font-medium text-stone-400 dark:text-stone-500 uppercase mt-1">Clinical Elite</span>
               </div>
-            </motion.div>
+            </div>
 
             <div className="hidden lg:flex items-center gap-1 bg-stone-100/50 dark:bg-stone-900/50 p-1.5 rounded-full border border-stone-200/50 dark:border-stone-800/50">
-              {['Home', isAuthenticated ? (isAdmin ? 'Admin' : 'Dashboard') : 'Login', 'Skin Analysis', 'AI', 'Routine', 'Clinic'].map((item, i) => {
+              {['Home', isAuthenticated ? (isAdmin ? 'Admin' : 'Dashboard') : 'Login', 'Skin Analysis', 'AI', 'Routine', 'Clinic'].map((item) => {
                 const pageId = item === 'Skin Analysis' ? 'scan' : item === 'Login' ? 'login' : item.toLowerCase();
                 const isActive = currentPage === pageId || (currentPage === 'results' && pageId === 'scan');
                 return (
-                  <motion.button
-                    initial={{ opacity: 0, y: -10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: i * 0.05 }}
+                  <button
                     key={pageId}
                     onClick={() => navigate(pageId)}
                     className={`px-6 py-2.5 rounded-full font-medium text-sm transition-all duration-500 relative ${isActive
@@ -206,7 +160,7 @@ export function App() {
                       />
                     )}
                     <span className="relative z-10">{item}</span>
-                  </motion.button>
+                  </button>
                 );
               })}
             </div>
@@ -214,26 +168,21 @@ export function App() {
             <div className="flex items-center gap-4">
 
               {/* Dark Mode Toggle */}
-              <motion.button
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
-                whileTap={{ scale: 0.9 }}
+              <button
                 onClick={() => setIsDarkMode(!isDarkMode)}
                 className="p-2.5 bg-stone-100 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-xl shadow-sm text-stone-600 dark:text-stone-300 hover:scale-110 active:scale-95 transition-all flex items-center justify-center cursor-pointer"
                 title="Toggle Dark Mode"
                 aria-label="Toggle Dark Mode"
               >
                 {isDarkMode ? <Sun className="w-5 h-5 text-amber-500" /> : <Moon className="w-5 h-5 text-stone-600 dark:text-stone-400" />}
-              </motion.button>
+              </button>
 
-              <motion.button
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
+              <button
                 onClick={() => navigate('scan')}
                 className="hidden sm:flex items-center gap-3 bg-[#4A3C31] dark:bg-stone-800 hover:bg-[#3B302B] dark:hover:bg-stone-700 text-white px-8 py-3.5 rounded-full text-sm font-semibold transition-all shadow-xl shadow-[#4A3C31]/20 hover:scale-105 active:scale-95"
               >
                 Analyze Now
-              </motion.button>
+              </button>
 
               <button className="lg:hidden p-3 bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 rounded-2xl shadow-sm text-stone-600 dark:text-stone-400">
                 <Activity className="w-5 h-5" />
@@ -278,21 +227,21 @@ export function App() {
               <section className="relative pt-12 text-center md:text-left">
                 <div className="grid lg:grid-cols-2 gap-20 items-center">
                   <div className="space-y-12">
-                    <motion.div variants={itemVariants} className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-stone-100 border border-stone-200 text-stone-500 font-semibold text-[10px] tracking-[0.2em] uppercase shadow-sm">
+                    <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-stone-100 border border-stone-200 text-stone-500 font-semibold text-[10px] tracking-[0.2em] uppercase shadow-sm">
                       <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
                       Powered by Advanced AI Vision
-                    </motion.div>
+                    </div>
 
-                    <motion.h1 variants={itemVariants} className="text-6xl md:text-8xl font-serif text-[#3B302B] dark:text-stone-100 leading-[0.95] tracking-tight">
+                    <h1 className="text-6xl md:text-8xl font-serif text-[#3B302B] dark:text-stone-100 leading-[0.95] tracking-tight">
                       Elevate Your <br />
                       <span className="text-[#8C7A6E] dark:text-[#C2B29F] italic font-light">Dermal Profile.</span>
-                    </motion.h1>
+                    </h1>
 
-                    <motion.p variants={itemVariants} className="text-xl text-stone-500 dark:text-stone-400 max-w-xl leading-relaxed font-light">
+                    <p className="text-xl text-stone-500 dark:text-stone-400 max-w-xl leading-relaxed font-light">
                       Experience the next generation of precision skincare. Our clinical-grade AI analyzes your topography to craft a routine as unique as your DNA.
-                    </motion.p>
+                    </p>
 
-                    <motion.div variants={itemVariants} className="flex flex-col sm:flex-row items-center gap-8">
+                    <div className="flex flex-col sm:flex-row items-center gap-8">
                       <button
                         onClick={() => navigate('scan')}
                         className="w-full sm:w-auto px-10 py-5 bg-[#4A3C31] hover:bg-[#3B302B] text-white rounded-full font-bold text-sm transition-all flex items-center justify-center gap-4 shadow-2xl shadow-[#4A3C31]/30 group"
@@ -309,9 +258,9 @@ export function App() {
                           <ArrowRight className="w-4 h-4" />
                         </div>
                       </button>
-                    </motion.div>
+                    </div>
 
-                    <motion.div variants={itemVariants} className="pt-8 flex items-center gap-12 border-t border-stone-200 dark:border-stone-800">
+                    <div className="pt-8 flex items-center gap-12 border-t border-stone-200 dark:border-stone-800">
                       <div>
                         <div className="text-3xl font-serif text-[#3B302B] dark:text-stone-100">12M+</div>
                         <div className="text-xs text-stone-400 dark:text-stone-600 font-medium uppercase tracking-widest mt-1">Data Points</div>
@@ -320,12 +269,10 @@ export function App() {
                         <div className="text-3xl font-serif text-[#3B302B] dark:text-stone-100">98.4%</div>
                         <div className="text-xs text-stone-400 dark:text-stone-600 font-medium uppercase tracking-widest mt-1">Accuracy</div>
                       </div>
-                    </motion.div>
+                    </div>
                   </div>
 
-                  <motion.div
-                    variants={itemVariants}
-                    className="relative px-8"
+                  <div className="relative px-8"
                   >
                     <div className="relative z-10 rounded-[3rem] overflow-hidden border-[12px] border-white dark:border-stone-900 shadow-2xl">
                       <div className="aspect-[4/5] bg-stone-200 dark:bg-stone-800 flex items-center justify-center">
@@ -335,20 +282,20 @@ export function App() {
                     {/* Decorative Elements */}
                     <div className="absolute -top-12 -right-4 w-40 h-40 bg-[#C2B29F]/20 rounded-full blur-3xl" />
                     <div className="absolute -bottom-12 -left-4 w-56 h-56 bg-emerald-500/10 rounded-full blur-3xl" />
-                  </motion.div>
+                  </div>
                 </div>
               </section>
 
               {/* Service Description Cards */}
               <section className="space-y-16">
-                <motion.div variants={itemVariants} className="text-center space-y-4">
+                <div className="text-center space-y-4">
                   <h2 className="text-4xl md:text-5xl font-serif text-[#3B302B] dark:text-stone-100">
                     Our <span className="text-[#8C7A6E] dark:text-[#C2B29F] italic">Services</span>
                   </h2>
                   <p className="text-stone-500 dark:text-stone-400 font-light max-w-2xl mx-auto leading-relaxed">
                     Explore our comprehensive suite of clinical-grade skincare services designed to elevate your dermal health.
                   </p>
-                </motion.div>
+                </div>
 
                 <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
                   {[
@@ -360,10 +307,7 @@ export function App() {
                     { icon: <Cpu className="w-7 h-7" />, title: "Technology", page: "technology", desc: "Hyper-spectral neural networks identifying subcutaneous biomarkers often invisible to the human eye.", color: "from-rose-500/10 to-rose-500/5" },
                     { icon: <Headphones className="w-7 h-7" />, title: "Support", page: "support", desc: "Our clinical support team of licensed professionals is available 24/7 for order tracking, tech support, and protocol guidance.", color: "from-teal-500/10 to-teal-500/5" }
                   ].map((service, i) => (
-                    <motion.div
-                      key={i}
-                      variants={itemVariants}
-                      whileHover={{ y: -8, scale: 1.02 }}
+                    <div key={i}
                       onClick={() => {
                         if ((service as any).isNewTab) {
                           window.open('/ai', '_blank');
@@ -386,7 +330,7 @@ export function App() {
                           Explore <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
                         </div>
                       </div>
-                    </motion.div>
+                    </div>
                   ))}
                 </div>
               </section>
@@ -397,104 +341,17 @@ export function App() {
           {currentPage === 'scan' && (
             <motion.div key="scan" variants={pageVariants} initial="initial" animate="animate" exit="exit" className="max-w-4xl mx-auto">
               <div className="text-center mb-20">
-                <motion.h2 variants={itemVariants} className="text-4xl md:text-5xl font-serif text-[#3B302B] mb-6">
+                <h2 className="text-4xl md:text-5xl font-serif text-[#3B302B] mb-6">
                   Dermal Topology <span className="text-[#8C7A6E] italic">Analysis</span>
-                </motion.h2>
-                <motion.p variants={itemVariants} className="text-stone-500 font-light max-w-xl mx-auto leading-relaxed">
+                </h2>
+                <p className="text-stone-500 font-light max-w-xl mx-auto leading-relaxed">
                   Our neural network is ready to map your skin profile. Please ensure you are in a well-lit environment for optimal depth calibration.
-                </motion.p>
+                </p>
               </div>
 
-              <motion.div variants={itemVariants} className="relative aspect-[4/3] max-w-2xl mx-auto">
-                <div className="absolute inset-0 rounded-[3rem] border border-stone-200 bg-stone-100/50 backdrop-blur-3xl overflow-hidden flex flex-col items-center justify-center p-12">
-                  {!isScanning ? (
-                    <motion.div
-                      initial={{ opacity: 0, scale: 0.9 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      className="text-center space-y-12"
-                    >
-                      <div className="relative inline-block">
-                        <div className="w-40 h-40 rounded-full border border-stone-300 dark:border-stone-700 flex items-center justify-center relative z-10 bg-white dark:bg-stone-800 shadow-xl overflow-hidden">
-                          <img src={scanReady} alt="Scan Ready" className="w-full h-full object-cover opacity-60 dark:opacity-80" />
-                          <div className="absolute inset-0 flex items-center justify-center">
-                            <Camera className="w-12 h-12 text-white/50" />
-                          </div>
-                        </div>
-                        <motion.div
-                          animate={{ scale: [1, 1.2, 1], opacity: [0.5, 0.2, 0.5] }}
-                          transition={{ duration: 3, repeat: Infinity }}
-                          className="absolute inset-0 rounded-full bg-[#4A3C31]/10 -z-0"
-                        />
-                      </div>
-
-                      <div className="space-y-4">
-                        <h3 className="text-xl font-serif text-[#3B302B]">Awaiting Input</h3>
-                        <p className="text-sm text-stone-400 font-light max-w-xs mx-auto text-center">
-                          Select your primary camera or upload a clinical close-up for processing.
-                        </p>
-                      </div>
-
-                      <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                        <button
-                          onClick={startScan}
-                          className="px-8 py-3.5 bg-[#4A3C31] text-white rounded-full text-sm font-bold shadow-lg shadow-[#4A3C31]/20 hover:scale-105 active:scale-95 transition-all"
-                        >
-                          Initiate Scan
-                        </button>
-                        <button className="flex items-center gap-3 px-8 py-3.5 bg-white border border-stone-200 text-[#3B302B] rounded-full text-sm font-bold hover:bg-stone-50 transition-all">
-                          <Upload className="w-4 h-4" /> Upload Plate
-                        </button>
-                      </div>
-                    </motion.div>
-                  ) : (
-                    <div className="flex flex-col items-center w-full">
-                      <div className="relative w-64 h-64 mb-16">
-                        {/* Clinical Scanner Hex Logic */}
-                        <div className="absolute inset-0 rounded-full border-[10px] border-stone-200/50" />
-                        <svg className="absolute inset-0 w-full h-full transform -rotate-90">
-                          <circle cx="128" cy="128" r="120" fill="none" stroke="rgba(74, 60, 49, 0.05)" strokeWidth="8" />
-                          <motion.circle
-                            cx="128" cy="128" r="120"
-                            fill="none"
-                            stroke="#4A3C31"
-                            strokeWidth="8"
-                            strokeLinecap="round"
-                            strokeDasharray="754"
-                            strokeDashoffset={754 - (754 * scanProgress) / 100}
-                            className="transition-all duration-100 ease-out"
-                          />
-                        </svg>
-
-                        <div className="absolute inset-0 flex flex-col items-center justify-center">
-                          <span className="text-6xl font-serif font-light text-[#3B302B]">{scanProgress}%</span>
-                          <span className="text-[10px] font-bold tracking-[0.3em] uppercase text-stone-400 mt-2">Processing</span>
-                        </div>
-
-                        {/* Scan Line Overlay */}
-                        <motion.div
-                          className="absolute left-4 right-4 h-[2px] bg-emerald-500 shadow-[0_0_20px_rgba(16,185,129,0.8)] z-20"
-                          animate={{ top: ["10%", "90%", "10%"] }}
-                          transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
-                        />
-                      </div>
-
-                      <div className="grid grid-cols-2 gap-8 w-full max-w-md">
-                        {['Pore Density', 'Hydration Map', 'UV Damage', 'Texture Index'].map((label, i) => (
-                          <div key={i} className="flex flex-col items-center gap-3">
-                            <div className="w-full h-1 bg-stone-200 rounded-full overflow-hidden">
-                              <motion.div
-                                animate={{ width: scanProgress > (i + 1) * 20 ? '100%' : `${(scanProgress / ((i + 1) * 25)) * 100}%` }}
-                                className="h-full bg-emerald-500/40"
-                              />
-                            </div>
-                            <span className="text-[9px] font-bold text-stone-400 tracking-widest uppercase">{label}</span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </motion.div>
+              <div className="relative w-full max-w-2xl mx-auto">
+                <FaceCapture onComplete={() => navigate('results')} />
+              </div>
 
               <div className="mt-20 grid sm:grid-cols-3 gap-8">
                 {[
@@ -520,18 +377,18 @@ export function App() {
               {/* Header */}
               <div className="flex flex-col md:flex-row justify-between items-end gap-12">
                 <div className="space-y-6 max-w-xl">
-                  <motion.div variants={itemVariants} className="inline-flex items-center gap-3 px-4 py-2 rounded-full bg-emerald-50 border border-emerald-100 text-emerald-700 text-[10px] font-bold tracking-widest uppercase">
+                  <div className="inline-flex items-center gap-3 px-4 py-2 rounded-full bg-emerald-50 border border-emerald-100 text-emerald-700 text-[10px] font-bold tracking-widest uppercase">
                     <div className="w-2 h-2 rounded-full bg-emerald-500" />
                     Analysis Verified: Phase-1 Complete
-                  </motion.div>
-                  <motion.h2 variants={itemVariants} className="text-5xl md:text-6xl font-serif text-[#3B302B] leading-tight">
+                  </div>
+                  <h2 className="text-5xl md:text-6xl font-serif text-[#3B302B] leading-tight">
                     Diagnostic <span className="text-[#8C7A6E] italic">Summary</span>
-                  </motion.h2>
-                  <motion.p variants={itemVariants} className="text-lg text-stone-500 font-light leading-relaxed">
+                  </h2>
+                  <p className="text-lg text-stone-500 font-light leading-relaxed">
                     Based on your dermal topography, your current biotype is <span className="text-[#4A3C31] font-bold">Resilient Mixed-B</span>. Focus on targeted hydration and structural barrier support.
-                  </motion.p>
+                  </p>
                 </div>
-                <motion.div variants={itemVariants} className="shrink-0">
+                <div className="shrink-0">
                   <button
                     onClick={() => navigate('routine')}
                     className="flex flex-col items-center gap-2 group"
@@ -541,12 +398,12 @@ export function App() {
                     </div>
                     <span className="text-[10px] font-bold tracking-[0.2em] text-stone-400 group-hover:text-[#3B302B] transition-colors uppercase mt-2">View Protocol</span>
                   </button>
-                </motion.div>
+                </div>
               </div>
 
               {/* Metrics Grid */}
               <div className="grid md:grid-cols-2 gap-12">
-                <motion.div variants={itemVariants} className="p-12 rounded-[3rem] bg-stone-100 border border-stone-200">
+                <div className="p-12 rounded-[3rem] bg-stone-100 border border-stone-200">
                   <h3 className="text-xs font-bold tracking-[0.3em] uppercase text-stone-400 mb-10">Clinical Biomarkers</h3>
                   <div className="space-y-10">
                     {[
@@ -563,20 +420,18 @@ export function App() {
                             }`}>{m.status}</span>
                         </div>
                         <div className="h-1.5 w-full bg-stone-200 rounded-full overflow-hidden">
-                          <motion.div
-                            initial={{ width: 0 }}
-                            animate={{ width: `${m.val}%` }}
-                            transition={{ duration: 1.5, delay: 0.5 + (i * 0.1), ease: "circOut" }}
-                            className="h-full bg-[#4A3C31]"
+                          <div
+                            style={{ width: `${m.val}%` }}
+                            className="h-full bg-[#4A3C31] transition-all duration-1000 ease-out"
                           />
                         </div>
                       </div>
                     ))}
                   </div>
-                </motion.div>
+                </div>
 
                 <div className="space-y-8">
-                  <motion.div variants={itemVariants} className="p-10 rounded-[2.5rem] bg-white border border-stone-100 shadow-sm">
+                  <div className="p-10 rounded-[2.5rem] bg-white border border-stone-100 shadow-sm">
                     <h3 className="text-xs font-bold tracking-[0.3em] uppercase text-stone-400 mb-6 font-sans">Dermatologist Verdict</h3>
                     <div className="flex gap-6 items-start">
                       <div className="w-16 h-16 rounded-3xl bg-stone-50 flex items-center justify-center shrink-0 border border-stone-100">
@@ -589,12 +444,12 @@ export function App() {
                         <div className="text-[10px] font-bold text-[#8C7A6E] uppercase tracking-widest">— Dr. Elena Weiss, AI Clinical Lead</div>
                       </div>
                     </div>
-                  </motion.div>
+                  </div>
 
-                  <motion.div variants={itemVariants} className="p-10 rounded-[2.5rem] bg-[#4A3C31] text-white shadow-2xl shadow-stone-900/20">
+                  <div className="p-10 rounded-[2.5rem] bg-[#4A3C31] text-white shadow-2xl shadow-stone-900/20">
                     <h3 className="text-xs font-bold tracking-[0.3em] uppercase text-stone-100/40 mb-8">Priority Recommendation</h3>
                     <div className="flex items-center gap-6">
-                      <div className="w-14 h-14 bg-white/10 rounded-2xl flex items-center justify-center backdrop-blur-md">
+                      <div className="w-14 h-14 bg-[#4A3C31] rounded-2xl flex items-center justify-center">
                         <Droplet className="w-6 h-6 text-stone-100" />
                       </div>
                       <div>
@@ -602,7 +457,7 @@ export function App() {
                         <div className="text-[10px] text-stone-100/60 uppercase tracking-widest mt-1">Scientific Curated 0.1% Retinol Logic</div>
                       </div>
                     </div>
-                  </motion.div>
+                  </div>
                 </div>
               </div>
             </motion.div>
@@ -612,19 +467,19 @@ export function App() {
           {currentPage === 'routine' && (
             <motion.div key="routine" variants={pageVariants} initial="initial" animate="animate" exit="exit" className="space-y-32 max-w-6xl mx-auto">
               <div className="text-center max-w-3xl mx-auto space-y-8">
-                <motion.div variants={itemVariants} className="inline-flex items-center gap-3 px-4 py-2 rounded-full bg-stone-100 border border-stone-200 text-stone-500 text-[10px] font-bold tracking-widest uppercase">
+                <div className="inline-flex items-center gap-3 px-4 py-2 rounded-full bg-stone-100 border border-stone-200 text-stone-500 text-[10px] font-bold tracking-widest uppercase">
                   Protocol #7721 — Clinical Active Concentration
-                </motion.div>
-                <motion.h2 variants={itemVariants} className="text-5xl md:text-6xl font-serif text-[#3B302B]">
+                </div>
+                <h2 className="text-5xl md:text-6xl font-serif text-[#3B302B]">
                   Personalized <span className="text-[#8C7A6E] italic">Regimen</span>
-                </motion.h2>
-                <motion.p variants={itemVariants} className="text-lg text-stone-500 font-light leading-relaxed">
+                </h2>
+                <p className="text-lg text-stone-500 font-light leading-relaxed">
                   Your biotype requires a stratified approach to dermal recovery. This protocol focuses on cellular turnover and barrier fortification.
-                </motion.p>
+                </p>
               </div>
 
               {/* Routine Selector */}
-              <motion.div variants={itemVariants} className="flex justify-center">
+              <div className="flex justify-center">
                 <div className="glass-card-dark p-2 rounded-full flex gap-2">
                   {[
                     { id: 'morning', label: 'AM Routine', icon: <Sun className="w-4 h-4" /> },
@@ -644,7 +499,7 @@ export function App() {
                     </button>
                   ))}
                 </div>
-              </motion.div>
+              </div>
 
               {/* Protocol Grid */}
               <div className="grid lg:grid-cols-3 gap-12">
@@ -657,10 +512,7 @@ export function App() {
                   { step: "02", type: "Resurfacing", name: "Clinical Retinoid 0.5%", desc: "Encapsulated retinaldehyde for accelerated cellular turnover and collagen synthesis.", data: "0.5% Retinaldehyde + Niacinamide", price: "$85" },
                   { step: "03", type: "Recovery", name: "Ceramide Barrier Balm", desc: "Intensive overnight repair to seal in actives and prevent transepidermal water loss.", data: "5% Panthenol + Cholesterol", price: "$72" }
                 ]).map((item, i) => (
-                  <motion.div
-                    key={i}
-                    variants={itemVariants}
-                    whileHover={{ y: -12 }}
+                  <div key={i}
                     className="group bg-white border border-stone-100 p-10 rounded-[3rem] shadow-[0_20px_60px_-15px_rgba(0,0,0,0.03)] hover:shadow-[0_40px_100px_-20px_rgba(74,60,49,0.1)] transition-all"
                   >
                     <div className="flex justify-between items-start mb-12">
@@ -685,12 +537,12 @@ export function App() {
                         Add to Regimen <ShoppingBag className="w-4 h-4" />
                       </button>
                     </div>
-                  </motion.div>
+                  </div>
                 ))}
               </div>
 
               {/* Fulfillment Section */}
-              <motion.div variants={itemVariants} className="pt-24 border-t border-stone-200 grid lg:grid-cols-2 gap-24 items-center">
+              <div className="pt-24 border-t border-stone-200 grid lg:grid-cols-2 gap-24 items-center">
                 <div className="space-y-10">
                   <h3 className="text-4xl font-serif text-[#3B302B]">Scientific <br /> <span className="text-[#8C7A6E] italic">Fulfillment Network</span></h3>
                   <p className="text-stone-500 font-light leading-relaxed">
@@ -732,10 +584,9 @@ export function App() {
                       <MessageSquare className="w-5 h-5" /> Book Dermal Consultation
                     </button>
                   </div>
-                  {/* Abstract Glow */}
-                  <div className="absolute top-0 right-0 w-80 h-80 bg-stone-100/10 rounded-full blur-[100px] -mr-40 -mt-20" />
+
                 </div>
-              </motion.div>
+              </div>
             </motion.div>
           )}
 
@@ -743,19 +594,19 @@ export function App() {
           {currentPage === 'clinic' && (
             <motion.div key="clinic" variants={pageVariants} initial="initial" animate="animate" exit="exit" className="space-y-32">
               <div className="text-center space-y-8 max-w-3xl mx-auto">
-                <motion.div variants={itemVariants} className="inline-flex items-center gap-3 px-4 py-2 rounded-full bg-stone-100 border border-stone-200 text-stone-400 text-[10px] font-bold tracking-widest uppercase">
+                <div className="inline-flex items-center gap-3 px-4 py-2 rounded-full bg-stone-100 border border-stone-200 text-stone-400 text-[10px] font-bold tracking-widest uppercase">
                   Global Dermal Network
-                </motion.div>
-                <motion.h2 variants={itemVariants} className="text-5xl md:text-7xl font-serif text-[#3B302B] leading-[1.1]">
+                </div>
+                <h2 className="text-5xl md:text-7xl font-serif text-[#3B302B] leading-[1.1]">
                   Clinical <span className="text-[#8C7A6E] italic">Topology Map</span>
-                </motion.h2>
-                <motion.p variants={itemVariants} className="text-xl text-stone-500 font-light leading-relaxed">
+                </h2>
+                <p className="text-xl text-stone-500 font-light leading-relaxed">
                   Locate certified skinE partner clinics and compounding labs within our encrypted clinical network.
-                </motion.p>
+                </p>
               </div>
 
               {/* Interactive Map Wrapper */}
-              <motion.div variants={itemVariants} className="relative aspect-[21/9] w-full rounded-[4rem] overflow-hidden border-[12px] border-white shadow-2xl bg-stone-100 group">
+              <div className="relative aspect-[21/9] w-full rounded-[4rem] overflow-hidden border-[12px] border-white shadow-2xl bg-stone-100 group">
                 {/* Simulated Map Grid */}
                 <div className="absolute inset-0 opacity-20 pointer-events-none" style={{ backgroundImage: 'radial-gradient(#4A3C31 1px, transparent 1px)', backgroundSize: '40px 40px' }} />
 
@@ -766,11 +617,7 @@ export function App() {
                   { top: '20%', left: '75%', name: 'London Skin Inst.', type: 'Research' },
                   { top: '65%', left: '40%', name: 'Berlin Formulation', type: 'Compounding' }
                 ].map((m, i) => (
-                  <motion.div
-                    key={i}
-                    initial={{ scale: 0, opacity: 0 }}
-                    animate={{ scale: 1, opacity: 1 }}
-                    transition={{ delay: 1 + (i * 0.2), type: 'spring' }}
+                  <div key={i}
                     style={{ top: m.top, left: m.left }}
                     className="absolute z-20"
                   >
@@ -793,7 +640,7 @@ export function App() {
                         <div className="w-2 h-2 bg-[#3B302B] rotate-45 absolute -bottom-1 left-1/2 -translate-x-1/2" />
                       </div>
                     </div>
-                  </motion.div>
+                  </div>
                 ))}
 
                 {/* Map Overlay Info */}
@@ -810,14 +657,14 @@ export function App() {
                 </div>
 
                 <div className="absolute top-12 right-12 z-30 flex gap-4">
-                  <button className="px-6 py-3 bg-white/90 backdrop-blur-md rounded-2xl text-xs font-bold text-[#3B302B] shadow-lg hover:bg-white transition-all">
+                  <button className="px-6 py-3 bg-white rounded-2xl text-xs font-bold text-[#3B302B] shadow-lg hover:bg-stone-50 transition-all">
                     Reset View
                   </button>
                   <button className="px-6 py-3 bg-[#4A3C31] rounded-2xl text-xs font-bold text-white shadow-lg hover:bg-[#3B302B] transition-all">
                     List All Clinics
                   </button>
                 </div>
-              </motion.div>
+              </div>
 
               {/* Community Results Feed Section */}
               <div className="space-y-16">
@@ -834,9 +681,7 @@ export function App() {
                     { biotype: 'Reactive Dry', hydration: 34, time: '14m ago', marker: 'Barrier Support Required' },
                     { biotype: 'Balanced Prime', hydration: 91, time: '38m ago', marker: 'Preventative Logic Active' }
                   ].map((res, i) => (
-                    <motion.div
-                      key={i}
-                      whileHover={{ y: -10 }}
+                    <div key={i}
                       className="p-8 rounded-[2.5rem] bg-white border border-stone-100 shadow-sm space-y-8"
                     >
                       <div className="flex justify-between items-center">
@@ -855,17 +700,16 @@ export function App() {
                           <span>{res.hydration}%</span>
                         </div>
                         <div className="h-1 w-full bg-stone-50 rounded-full overflow-hidden">
-                          <motion.div
-                            initial={{ width: 0 }}
-                            animate={{ width: `${res.hydration}%` }}
-                            className="h-full bg-[#4A3C31]"
+                          <div
+                            style={{ width: `${res.hydration}%` }}
+                            className="h-full bg-[#4A3C31] transition-all duration-1000"
                           />
                         </div>
                       </div>
                       <div className="pt-4 flex items-center gap-3 text-[10px] font-bold text-emerald-600 uppercase tracking-widest">
                         <Sparkles className="w-3.5 h-3.5" /> {res.marker}
                       </div>
-                    </motion.div>
+                    </div>
                   ))}
                 </div>
               </div>
@@ -876,27 +720,27 @@ export function App() {
           {currentPage === 'biometrics' && (
             <motion.div key="biometrics" variants={pageVariants} initial="initial" animate="animate" exit="exit" className="space-y-32">
               <div className="text-center space-y-8 max-w-3xl mx-auto">
-                <motion.div variants={itemVariants} className="inline-flex items-center gap-3 px-4 py-2 rounded-full bg-stone-100 border border-stone-200 text-stone-400 text-[10px] font-bold tracking-widest uppercase">
+                <div className="inline-flex items-center gap-3 px-4 py-2 rounded-full bg-stone-100 border border-stone-200 text-stone-400 text-[10px] font-bold tracking-widest uppercase">
                   Dermal Intelligence
-                </motion.div>
-                <motion.h2 variants={itemVariants} className="text-5xl md:text-7xl font-serif text-[#3B302B] leading-[1.1]">
+                </div>
+                <h2 className="text-5xl md:text-7xl font-serif text-[#3B302B] leading-[1.1]">
                   Advanced <span className="text-[#8C7A6E] italic">Biometrics</span>
-                </motion.h2>
-                <motion.p variants={itemVariants} className="text-xl text-stone-500 font-light leading-relaxed">
+                </h2>
+                <p className="text-xl text-stone-500 font-light leading-relaxed">
                   Real-time synchronization of your skin metrics with our clinical cloud for adaptive formulation logic.
-                </motion.p>
+                </p>
               </div>
 
               <div className="grid lg:grid-cols-2 gap-16">
                 {/* Real-time Graph Visual (Conceptual) */}
-                <motion.div variants={itemVariants} className="p-12 rounded-[3.5rem] bg-[#3B302B] text-white space-y-10 relative overflow-hidden">
-                  <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-500/10 blur-[100px] rounded-full" />
+                <div className="p-12 rounded-[3.5rem] bg-[#3B302B] text-white space-y-10 relative overflow-hidden">
+
                   <div className="flex justify-between items-start relative z-10">
                     <div>
                       <h3 className="text-3xl font-serif mb-2">Metric <span className="text-stone-400">Velocity</span></h3>
                       <p className="text-stone-400 text-xs uppercase tracking-widest">Active Tracking • Sector 7</p>
                     </div>
-                    <div className="p-4 bg-white/10 backdrop-blur-md rounded-2xl border border-white/10 text-emerald-400 font-bold text-sm">
+                    <div className="p-4 bg-white/10 rounded-2xl border border-white/10 text-emerald-400 font-bold text-sm">
                       LIVE +0.8%
                     </div>
                   </div>
@@ -904,12 +748,9 @@ export function App() {
                   {/* Simulated Graph Lines */}
                   <div className="h-64 flex items-end gap-1 relative z-10">
                     {[40, 60, 45, 80, 55, 90, 75, 40, 60, 45, 80, 55, 90, 75].map((h, i) => (
-                      <motion.div
-                        key={i}
-                        initial={{ height: 0 }}
-                        animate={{ height: `${h}%` }}
-                        transition={{ delay: 1.5 + (i * 0.05) }}
-                        className="flex-1 bg-gradient-to-t from-emerald-500/20 to-emerald-400 rounded-t-sm"
+                      <div key={i}
+                        style={{ height: `${h}%` }}
+                        className="flex-1 bg-gradient-to-t from-emerald-500/20 to-emerald-400 rounded-t-sm transition-all duration-700"
                       />
                     ))}
                   </div>
@@ -924,7 +765,7 @@ export function App() {
                       <div className="text-2xl text-stone-200">92.1</div>
                     </div>
                   </div>
-                </motion.div>
+                </div>
 
                 {/* Metric breakdown */}
                 <div className="space-y-12">
@@ -933,9 +774,7 @@ export function App() {
                     { label: 'Sebum Equilibrium', value: 'Balanced', trend: 'Stable', desc: 'Secretions aligned with environmental moisture signals.' },
                     { label: 'Barrier Resilience', value: 'High', trend: 'Reinforced', desc: 'No micro-tears detected in current analysis cycle.' }
                   ].map((m, i) => (
-                    <motion.div
-                      key={i}
-                      variants={itemVariants}
+                    <div key={i}
                       className="p-8 rounded-[2.5rem] bg-white border border-stone-100 space-y-4 hover:shadow-xl hover:shadow-stone-900/5 transition-all cursor-default"
                     >
                       <div className="flex justify-between items-center text-sm font-bold uppercase tracking-widest">
@@ -944,7 +783,7 @@ export function App() {
                       </div>
                       <div className="text-2xl font-serif text-[#8C7A6E]">{m.value}</div>
                       <p className="text-stone-400 text-sm font-light leading-relaxed">{m.desc}</p>
-                    </motion.div>
+                    </div>
                   ))}
                 </div>
               </div>
@@ -955,15 +794,15 @@ export function App() {
           {currentPage === 'technology' && (
             <motion.div key="tech" variants={pageVariants} initial="initial" animate="animate" exit="exit" className="max-w-5xl mx-auto space-y-32 py-12">
               <div className="text-center space-y-8 max-w-3xl mx-auto">
-                <motion.div variants={itemVariants} className="inline-flex items-center gap-3 px-4 py-2 rounded-full bg-stone-100 border border-stone-200 text-stone-400 text-[10px] font-bold tracking-widest uppercase">
+                <div className="inline-flex items-center gap-3 px-4 py-2 rounded-full bg-stone-100 border border-stone-200 text-stone-400 text-[10px] font-bold tracking-widest uppercase">
                   Technical Whitepaper Summary
-                </motion.div>
-                <motion.h2 variants={itemVariants} className="text-5xl md:text-7xl font-serif text-[#3B302B] leading-[1.1]">
+                </div>
+                <h2 className="text-5xl md:text-7xl font-serif text-[#3B302B] leading-[1.1]">
                   The Science of <br /> <span className="text-[#8C7A6E] italic">Digital Dermatology</span>
-                </motion.h2>
-                <motion.p variants={itemVariants} className="text-xl text-stone-500 font-light leading-relaxed">
+                </h2>
+                <p className="text-xl text-stone-500 font-light leading-relaxed">
                   SkinE leverages hyper-spectral neural networks to identify subcutaneous biomarkers often invisible to the human eye.
-                </motion.p>
+                </p>
               </div>
 
               <div className="grid md:grid-cols-2 gap-16">
@@ -973,13 +812,13 @@ export function App() {
                   { icon: <Sparkles className="w-10 h-10" />, title: "Predictive Aging Logic", desc: "Using longitudinal datasets, we model how your dermal profile will respond to environmental stressors, allowing for preventative rather than reactive care." },
                   { icon: <Info className="w-10 h-10" />, title: "Formulation Synergy", desc: "Algorithms cross-reference ingredients against 45,000+ chemical reactions to ensure your routine contains only synergistic, stable active compounds." }
                 ].map((item, i) => (
-                  <motion.div key={i} variants={itemVariants} className="space-y-6 p-10 rounded-[3rem] border border-stone-100 hover:border-stone-200 hover:bg-white transition-all">
+                  <div key={i} className="space-y-6 p-10 rounded-[3rem] border border-stone-100 hover:border-stone-200 hover:bg-white transition-all">
                     <div className="w-20 h-20 rounded-3xl bg-stone-50 text-[#4A3C31] flex items-center justify-center border border-stone-100 mb-8 shadow-sm">
                       {item.icon}
                     </div>
                     <h3 className="text-2xl font-serif text-[#3B302B]">{item.title}</h3>
                     <p className="text-stone-500 font-light leading-relaxed">{item.desc}</p>
-                  </motion.div>
+                  </div>
                 ))}
               </div>
             </motion.div>
@@ -1054,26 +893,22 @@ export function App() {
             <motion.div key="dashboard" variants={pageVariants} initial="initial" animate="animate" exit="exit" className="max-w-6xl mx-auto space-y-16">
               {/* Welcome Section */}
               <div className="space-y-3">
-                <motion.h2 variants={itemVariants} className="text-4xl md:text-5xl font-serif text-[#3B302B] dark:text-stone-100">
+                <h2 className="text-4xl md:text-5xl font-serif text-[#3B302B] dark:text-stone-100">
                   Welcome back, <span className="text-[#8C7A6E] dark:text-[#C2B29F] italic">Jane</span>
-                </motion.h2>
-                <motion.p variants={itemVariants} className="text-lg text-stone-500 dark:text-stone-400 font-light">
+                </h2>
+                <p className="text-lg text-stone-500 dark:text-stone-400 font-light">
                   Track your skin's progress and analyze your routine
-                </motion.p>
+                </p>
               </div>
 
               {/* Stats Cards */}
-              <motion.div variants={itemVariants} className="grid md:grid-cols-3 gap-8">
+              <div className="grid md:grid-cols-3 gap-8">
                 {[
                   { icon: <BarChart3 className="w-6 h-6" />, value: "12", label: "Total Analyses", badge: "+12%", badgeColor: "text-emerald-600 bg-emerald-50 dark:bg-emerald-900/30 dark:text-emerald-400", iconBg: "bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400" },
                   { icon: <TrendingUp className="w-6 h-6" />, value: "92%", label: "Current Score", badge: "+5%", badgeColor: "text-emerald-600 bg-emerald-50 dark:bg-emerald-900/30 dark:text-emerald-400", iconBg: "bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400" },
                   { icon: <Calendar className="w-6 h-6" />, value: "3 months", label: "On SkinE", badge: null, badgeColor: "", iconBg: "bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400" }
                 ].map((stat, i) => (
-                  <motion.div
-                    key={i}
-                    whileHover={{ y: -4 }}
-                    className="p-8 rounded-[2.5rem] bg-white dark:bg-stone-900 border border-stone-100 dark:border-stone-800 shadow-[0_10px_40px_-10px_rgba(0,0,0,0.04)] dark:shadow-none transition-all"
-                  >
+                  <div key={i} className="p-8 rounded-[2.5rem] bg-white dark:bg-stone-900 border border-stone-100 dark:border-stone-800 shadow-[0_10px_40px_-10px_rgba(0,0,0,0.04)] dark:shadow-none transition-all">
                     <div className="flex justify-between items-start mb-6">
                       <div className={`w-12 h-12 rounded-2xl ${stat.iconBg} flex items-center justify-center`}>
                         {stat.icon}
@@ -1084,14 +919,12 @@ export function App() {
                     </div>
                     <div className="text-3xl font-serif text-[#3B302B] dark:text-stone-100 mb-2">{stat.value}</div>
                     <div className="text-xs text-stone-400 dark:text-stone-500 font-medium uppercase tracking-widest">{stat.label}</div>
-                  </motion.div>
+                  </div>
                 ))}
-              </motion.div>
+              </div>
 
               {/* New Analysis CTA */}
-              <motion.div
-                variants={itemVariants}
-                className="flex flex-col sm:flex-row items-center justify-between gap-8 p-10 rounded-[2.5rem] bg-stone-50 dark:bg-stone-900 border border-stone-100 dark:border-stone-800"
+              <div className="flex flex-col sm:flex-row items-center justify-between gap-8 p-10 rounded-[2.5rem] bg-stone-50 dark:bg-stone-900 border border-stone-100 dark:border-stone-800"
               >
                 <div className="space-y-2">
                   <h3 className="text-xl font-serif font-bold text-[#3B302B] dark:text-stone-100">Ready for your next analysis?</h3>
@@ -1103,10 +936,10 @@ export function App() {
                 >
                   <Plus className="w-5 h-5" /> New Analysis
                 </button>
-              </motion.div>
+              </div>
 
               {/* Analysis History */}
-              <motion.div variants={itemVariants} className="space-y-8">
+              <div className="space-y-8">
                 <div className="flex justify-between items-center">
                   <h3 className="text-2xl font-serif text-[#3B302B] dark:text-stone-100">Analysis History</h3>
                   <button className="text-sm font-bold text-[#8C7A6E] dark:text-[#C2B29F] hover:text-[#4A3C31] dark:hover:text-stone-200 transition-colors">View All</button>
@@ -1117,9 +950,7 @@ export function App() {
                     { date: "Jan 18, 2026", type: "Quick Scan", score: 87, biotype: "Balanced Prime", status: "Completed" },
                     { date: "Dec 05, 2025", type: "Full Analysis", score: 81, biotype: "Reactive Dry", status: "Completed" }
                   ].map((entry, i) => (
-                    <motion.div
-                      key={i}
-                      whileHover={{ x: 4 }}
+                    <div key={i}
                       className="flex items-center justify-between p-6 rounded-[2rem] bg-white dark:bg-stone-900 border border-stone-100 dark:border-stone-800 hover:shadow-lg hover:shadow-stone-900/5 dark:hover:bg-stone-800/50 transition-all cursor-pointer group"
                     >
                       <div className="flex items-center gap-6">
@@ -1138,10 +969,10 @@ export function App() {
                         </div>
                         <ChevronRight className="w-5 h-5 text-stone-300 dark:text-stone-600 group-hover:text-[#4A3C31] dark:group-hover:text-stone-300 transition-colors" />
                       </div>
-                    </motion.div>
+                    </div>
                   ))}
                 </div>
-              </motion.div>
+              </div>
             </motion.div>
           )}
 
@@ -1150,16 +981,16 @@ export function App() {
             <motion.div key="recommendations" variants={pageVariants} initial="initial" animate="animate" exit="exit" className="max-w-5xl mx-auto space-y-16">
               {/* Header */}
               <div className="space-y-3">
-                <motion.h2 variants={itemVariants} className="text-4xl md:text-5xl font-serif text-[#3B302B] dark:text-stone-100">
+                <h2 className="text-4xl md:text-5xl font-serif text-[#3B302B] dark:text-stone-100">
                   Your Personalized <span className="text-[#8C7A6E] dark:text-[#C2B29F] italic">Routine</span>
-                </motion.h2>
-                <motion.p variants={itemVariants} className="text-lg text-stone-500 dark:text-stone-400 font-light">
+                </h2>
+                <p className="text-lg text-stone-500 dark:text-stone-400 font-light">
                   Customized skincare recommendations based on your analysis
-                </motion.p>
+                </p>
               </div>
 
               {/* Routine Summary Card */}
-              <motion.div variants={itemVariants} className="p-10 rounded-[2.5rem] bg-stone-50 dark:bg-stone-900 border border-stone-100 dark:border-stone-800 space-y-6">
+              <div className="p-10 rounded-[2.5rem] bg-stone-50 dark:bg-stone-900 border border-stone-100 dark:border-stone-800 space-y-6">
                 <h3 className="text-2xl font-serif text-[#3B302B] dark:text-stone-100">Routine for Combination Skin</h3>
                 <div className="flex flex-wrap gap-3">
                   {['Dryness Treatment', 'Dark Spot Reduction', 'Texture Improvement'].map((tag, i) => (
@@ -1171,10 +1002,10 @@ export function App() {
                 <p className="text-stone-500 dark:text-stone-400 font-light leading-relaxed text-sm">
                   This routine is designed to balance your skin while addressing specific concerns. Follow consistently for 8-12 weeks to see optimal results.
                 </p>
-              </motion.div>
+              </div>
 
               {/* Routine Tabs */}
-              <motion.div variants={itemVariants} className="flex justify-center">
+              <div className="flex justify-center">
                 <div className="p-2 rounded-full bg-stone-100 dark:bg-stone-900 border border-stone-200/50 dark:border-stone-800 flex gap-2">
                   {[
                     { id: 'morning', label: 'Morning Routine', icon: <Sun className="w-4 h-4" /> },
@@ -1194,7 +1025,7 @@ export function App() {
                     </button>
                   ))}
                 </div>
-              </motion.div>
+              </div>
 
               {/* Product Cards */}
               <div className="space-y-6">
@@ -1209,11 +1040,7 @@ export function App() {
                   { step: 3, name: "Niacinamide 10%", category: "Serum", desc: "Minimizes pores and regulates sebum production", why: "For combination skin balance", icon: <Sparkles className="w-6 h-6" /> },
                   { step: 4, name: "Ceramide Night Cream", category: "Moisturizer", desc: "Rich overnight repair cream that seals in actives", why: "For barrier repair", icon: <Heart className="w-6 h-6" /> }
                 ]).map((product, i) => (
-                  <motion.div
-                    key={`${activeTab}-${i}`}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: i * 0.1 }}
+                  <div key={`${activeTab}-${i}`}
                     className="flex items-start gap-8 p-8 rounded-[2.5rem] bg-white dark:bg-stone-900 border border-stone-100 dark:border-stone-800 shadow-[0_10px_40px_-10px_rgba(0,0,0,0.04)] dark:shadow-none hover:shadow-lg hover:shadow-stone-900/5 dark:hover:bg-stone-800/50 transition-all group"
                   >
                     <div className="shrink-0 w-14 h-14 rounded-2xl bg-stone-50 dark:bg-stone-800 text-[#8C7A6E] dark:text-[#C2B29F] flex items-center justify-center border border-stone-100 dark:border-stone-700 group-hover:bg-[#4A3C31] group-hover:text-white transition-all">
@@ -1232,7 +1059,7 @@ export function App() {
                         Why: <span className="text-[#8C7A6E] dark:text-[#C2B29F]">{product.why}</span>
                       </div>
                     </div>
-                  </motion.div>
+                  </div>
                 ))}
               </div>
             </motion.div>
@@ -1245,46 +1072,36 @@ export function App() {
                 {/* Abstract Tech Background */}
                 <div className="absolute inset-0 pointer-events-none opacity-30 dark:opacity-20">
                   <div className="absolute top-0 left-0 w-full h-full" style={{ backgroundImage: 'radial-gradient(#4A3C31 1px, transparent 1px)', backgroundSize: '30px 30px' }} />
-                  <motion.div
-                    animate={{ scale: [1, 1.2, 1], opacity: [0.3, 0.5, 0.3] }}
-                    transition={{ duration: 8, repeat: Infinity }}
-                    className="absolute -top-[20%] -right-[20%] w-[60%] h-[60%] bg-indigo-500/20 rounded-full blur-[120px]"
-                  />
+
                 </div>
 
                 <div className="relative z-10 space-y-8">
-                  <motion.div
-                    variants={itemVariants}
-                    className="inline-flex items-center gap-3 px-6 py-2 rounded-full bg-stone-100 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 text-[#4A3C31] dark:text-stone-300 text-[10px] font-bold tracking-[0.3em] uppercase"
+                  <div className="inline-flex items-center gap-3 px-6 py-2 rounded-full bg-stone-100 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 text-[#4A3C31] dark:text-stone-300 text-[10px] font-bold tracking-[0.3em] uppercase"
                   >
                     <div className="w-2 h-2 rounded-full bg-indigo-500 animate-pulse" />
                     Neural Network Expansion
-                  </motion.div>
+                  </div>
 
-                  <motion.h2 variants={itemVariants} className="text-6xl md:text-7xl font-serif text-[#3B302B] dark:text-stone-100 leading-tight">
+                  <h2 className="text-6xl md:text-7xl font-serif text-[#3B302B] dark:text-stone-100 leading-tight">
                     Artificial <span className="text-[#8C7A6E] dark:text-[#C2B29F] italic">Intelligence</span>
-                  </motion.h2>
+                  </h2>
 
-                  <motion.p variants={itemVariants} className="text-xl text-stone-500 dark:text-stone-400 font-light max-w-2xl mx-auto leading-relaxed">
+                  <p className="text-xl text-stone-500 dark:text-stone-400 font-light max-w-2xl mx-auto leading-relaxed">
                     We are engineering a revolutionary generative dermal model. Your clinical profile will soon be synthesized into predictive visualization protocols.
-                  </motion.p>
+                  </p>
                 </div>
 
-                <motion.div variants={itemVariants} className="relative z-10 pt-12">
+                <div className="relative z-10 pt-12">
                   <div className="inline-block px-12 py-6 rounded-3xl bg-[#4A3C31] dark:bg-stone-800 text-white font-serif text-2xl italic tracking-wide shadow-2xl shadow-[#4A3C31]/30">
                     Coming Q3 2026
                   </div>
-                </motion.div>
+                </div>
 
                 <div className="relative z-10 pt-16 grid grid-cols-3 gap-8 max-w-lg mx-auto">
                   {['Predictive Logic', 'Dermal Gen-AI', 'Bio-Symmetry'].map((label, i) => (
                     <div key={i} className="space-y-3">
                       <div className="h-1 bg-stone-100 dark:bg-stone-800 rounded-full overflow-hidden">
-                        <motion.div
-                          animate={{ width: ['0%', '100%'] }}
-                          transition={{ duration: 2, repeat: Infinity, delay: i * 0.5 }}
-                          className="h-full bg-indigo-500/40"
-                        />
+                        <div className="h-full bg-indigo-500/40 w-full" />
                       </div>
                       <span className="text-[9px] font-bold text-stone-400 dark:text-stone-600 uppercase tracking-widest">{label}</span>
                     </div>
@@ -1367,15 +1184,13 @@ export function App() {
       <AnimatePresence>
         {
           showConsultModal && (
-            <motion.div
-              initial={{ opacity: 0 }}
+            <motion.div initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               className="fixed inset-0 z-[100] flex items-center justify-center p-4"
             >
-              <div className="absolute inset-0 bg-[#3B302B]/60 backdrop-blur-md" onClick={() => setShowConsultModal(false)} />
-              <motion.div
-                initial={{ scale: 0.9, opacity: 0, y: 50 }}
+              <div className="absolute inset-0 bg-[#3B302B]/80" onClick={() => setShowConsultModal(false)} />
+              <motion.div initial={{ scale: 0.9, opacity: 0, y: 50 }}
                 animate={{ scale: 1, opacity: 1, y: 0 }}
                 exit={{ scale: 0.9, opacity: 0, y: 50 }}
                 className="bg-white w-full max-w-2xl rounded-[3.5rem] shadow-2xl relative z-10 overflow-hidden border border-white/20"
@@ -1399,7 +1214,7 @@ export function App() {
                     <div key={i} className="group p-8 rounded-[2.5rem] bg-stone-50 border border-stone-100 flex items-center gap-8 hover:bg-white hover:border-[#4A3C31]/20 hover:shadow-xl hover:shadow-stone-900/5 transition-all">
                       <div className="relative shrink-0">
                         <div className="w-20 h-20 rounded-3xl bg-stone-200 dark:bg-stone-800 flex items-center justify-center border border-white dark:border-stone-700 shadow-sm overflow-hidden">
-                          <img src={i === 0 ? pharmacist1 : pharmacist2} alt={doc.name} className="w-full h-full object-cover" />
+                          <Stethoscope className="w-8 h-8 text-stone-400" />
                         </div>
                         {doc.available && <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-emerald-500 border-4 border-white dark:border-stone-900 rounded-full" />}
                       </div>

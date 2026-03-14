@@ -38,7 +38,7 @@ export function DashboardHistory() {
                             </tr>
                         </thead>
                         <tbody>
-                            {mockHistory.map((entry, i) => (
+                            {mockHistory.map((entry) => (
                                 <tr key={entry.id} className="border-b border-stone-100 dark:border-stone-800/50 hover:bg-stone-50/50 dark:hover:bg-stone-800/30 transition-colors">
                                     <td className="p-6 pl-10">
                                         <div className="w-16 h-16 bg-stone-100 dark:bg-stone-800 rounded-2xl flex items-center justify-center border border-stone-200 dark:border-stone-700">

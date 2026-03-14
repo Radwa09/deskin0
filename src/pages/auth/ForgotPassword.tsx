@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { ArrowLeft, Mail } from 'lucide-react';
+import { Mail } from 'lucide-react';
 import { useState } from 'react';
 
 export function ForgotPassword({ onNavigate }: { onNavigate: (page: string) => void }) {

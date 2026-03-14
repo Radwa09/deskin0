@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { User, Save, Upload } from 'lucide-react';
+import { Save, Upload } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useState } from 'react';
 

@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion';
-import { Camera, Droplet, ShieldAlert } from 'lucide-react';
+import { ShieldAlert } from 'lucide-react';
 import { useState } from 'react';
+import { FaceCapture } from '../../components/FaceCapture';
 
 const itemVariants = {
     initial: { opacity: 0, y: 20 },
@@ -8,23 +9,7 @@ const itemVariants = {
 };
 
 export function DashboardSkinAnalysis() {
-    const [isScanning, setIsScanning] = useState(false);
     const [result, setResult] = useState<any>(null);
-
-    const startAnalysis = () => {
-        setIsScanning(true);
-        setResult(null);
-
-        // Mock analysis delay
-        setTimeout(() => {
-            setIsScanning(false);
-            setResult({
-                type: 'Combination',
-                confidence: '96.4%',
-                recommendation: 'Targeted hydration on cheeks, salicylic acid on T-zone.'
-            });
-        }, 2000);
-    };
 
     return (
         <motion.div
@@ -35,29 +20,12 @@ export function DashboardSkinAnalysis() {
         >
             <div className="mb-10">
                 <h2 className="text-4xl font-serif text-[#3B302B] dark:text-stone-100 mb-2">New <span className="text-[#8C7A6E] italic">Analysis</span></h2>
-                <p className="text-stone-500 font-light">Upload a facial image for instant clinical biomarker mapping.</p>
+                <p className="text-stone-500 font-light">Direct integration with your clinical training dataset.</p>
             </div>
 
-            <motion.div variants={itemVariants} className="p-12 border-2 border-dashed border-stone-200 dark:border-stone-700 bg-stone-50/50 dark:bg-stone-800/30 rounded-[3rem] text-center flex flex-col items-center justify-center">
-                {!isScanning && !result ? (
-                    <>
-                        <div className="w-20 h-20 bg-white dark:bg-stone-800 rounded-full flex items-center justify-center mb-6 shadow-sm">
-                            <Camera className="w-8 h-8 text-[#4A3C31] dark:text-stone-300" />
-                        </div>
-                        <h3 className="text-lg font-bold text-[#3B302B] dark:text-stone-200 mb-2">Upload Image</h3>
-                        <p className="text-sm text-stone-400 mb-8 max-w-sm">Ensure good lighting and front-facing angle for the highest accuracy.</p>
-                        <button
-                            onClick={startAnalysis}
-                            className="px-8 py-4 bg-[#4A3C31] hover:bg-[#3B302B] text-white rounded-2xl font-bold text-sm shadow-xl shadow-[#4A3C31]/20 transition-all"
-                        >
-                            Simulate Upload & Analyze
-                        </button>
-                    </>
-                ) : isScanning ? (
-                    <div className="flex flex-col items-center py-10 space-y-6">
-                        <div className="w-16 h-16 border-4 border-stone-200 border-t-[#4A3C31] rounded-full animate-spin"></div>
-                        <div className="text-sm font-bold tracking-[0.3em] uppercase text-stone-400">Processing Layers</div>
-                    </div>
+            <motion.div variants={itemVariants} className="p-8 sm:p-12 border-2 border-dashed border-stone-200 dark:border-stone-700 bg-stone-50/50 dark:bg-stone-800/30 rounded-[3rem]">
+                {!result ? (
+                    <FaceCapture onComplete={setResult} />
                 ) : (
                     <motion.div
                         initial={{ scale: 0.9, opacity: 0 }}
@@ -90,7 +58,7 @@ export function DashboardSkinAnalysis() {
                         <div className="mt-8 flex justify-end">
                             <button
                                 onClick={() => setResult(null)}
-                                className="text-xs font-bold text-[#4A3C31] dark:text-stone-300 hover:underline"
+                                className="text-xs font-bold text-[#4A3C31] dark:text-stone-300 hover:underline px-4 py-2 hover:bg-stone-50 dark:hover:bg-stone-800 rounded-lg transition-colors"
                             >
                                 Perform New Analysis
                             </button>
