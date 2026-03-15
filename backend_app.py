@@ -1,24 +1,39 @@
 import os
 import time
-from flask import Flask, request, jsonify
-from flask_cors import CORS
+import shutil
 import base64
 import cv2
 import numpy as np
+from flask import Flask, request, jsonify
+from flask_cors import CORS
 
 app = Flask(__name__)
-# Allow CORS for the frontend port (typically 5173 for Vite)
+# Allow CORS for the frontend
 CORS(app, resources={r"/api/*": {"origins": "*"}})
 
-SAVE_FOLDER = "skin_training_data"
-os.makedirs(SAVE_FOLDER, exist_ok=True)
+SAVE_FOLDER = "captured_faces"
+TRAIN_FOLDER = "skin_training_data"
 
-# Load the exact Haar Cascade used in face_detected.ipynb
-try:
-    face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + "haarcascade_frontalface_default.xml")
-except Exception as e:
-    print(f"Warning: Could not load cascade classifier: {e}")
-    face_cascade = None
+os.makedirs(SAVE_FOLDER, exist_ok=True)
+os.makedirs(TRAIN_FOLDER, exist_ok=True)
+
+CENTER_TOLERANCE = 50
+CAPTURE_DELAY = 2
+
+# Load the Haar Cascade used in the user's script
+face_cascade = cv2.CascadeClassifier(
+    cv2.data.haarcascades + "haarcascade_frontalface_default.xml"
+)
+
+def clear_folder(folder):
+    for file in os.listdir(folder):
+        path = os.path.join(folder, file)
+        if os.path.isfile(path):
+            os.remove(path)
+
+@app.route('/api/health', methods=['GET'])
+def health_check():
+    return jsonify({"status": "healthy", "time": time.time()}), 200
 
 @app.route('/api/upload-face', methods=['POST'])
 def upload_face():
@@ -27,23 +42,31 @@ def upload_face():
         return jsonify({"error": "No image data provided"}), 400
     
     image_data = data['image']
-    # Removing header if present: "data:image/jpeg;base64,..."
     if ',' in image_data:
         image_data = image_data.split(',')[1]
         
     try:
         img_bytes = base64.b64decode(image_data)
+        
+        # 🧹 Clear old photos as per user logic
+        clear_folder(SAVE_FOLDER)
+        
         timestamp = time.strftime("%Y%m%d_%H%M%S")
         filename = f"face_{timestamp}.jpg"
-        filepath = os.path.join(SAVE_FOLDER, filename)
         
-        with open(filepath, "wb") as f:
+        save_path = os.path.join(SAVE_FOLDER, filename)
+        train_path = os.path.join(TRAIN_FOLDER, filename)
+        
+        with open(save_path, "wb") as f:
             f.write(img_bytes)
+        
+        # 📁 Copy to training folder as per user logic
+        shutil.copy(save_path, train_path)
             
-        print(f"Saved image to {filepath}")
+        print(f"Saved image at: {save_path}")
         return jsonify({
             "success": True, 
-            "filepath": filepath, 
+            "filepath": save_path, 
             "message": "Image saved successfully for skin training data."
         })
     except Exception as e:
@@ -52,9 +75,6 @@ def upload_face():
 
 @app.route('/api/detect-face', methods=['POST'])
 def detect_face():
-    if face_cascade is None:
-        return jsonify({"error": "OpenCV cascade failed to load on server"}), 500
-        
     data = request.json
     if not data or 'image' not in data:
         return jsonify({"error": "No image data"}), 400
@@ -71,10 +91,7 @@ def detect_face():
         if frame is None:
             return jsonify({"error": "Invalid image format"}), 400
             
-        # Optional: resize if the frontend sends a large image, but we expect a small one
         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-        
-        # Exact logic from face_detected.ipynb
         faces = face_cascade.detectMultiScale(gray, 1.3, 5)
         
         face_list = []
@@ -98,5 +115,6 @@ def detect_face():
 
 if __name__ == '__main__':
     print(f"Starting Flask server on port 5000...")
-    print(f"Saving images to directory: {os.path.abspath(SAVE_FOLDER)}")
-    app.run(port=5000, debug=True)
+    print(f"Captured Faces directory: {os.path.abspath(SAVE_FOLDER)}")
+    print(f"Training Data directory: {os.path.abspath(TRAIN_FOLDER)}")
+    app.run(host='0.0.0.0', port=5000, debug=True)

@@ -25,3 +25,13 @@ yarn-error.log*
 
 # Vite
 .vite/
+
+# Face Detection Data
+captured_faces/
+skin_training_data/
+
+# Temporary Test Scripts
+test_backend.py
+test_backend_v2.py
+final_test.py
+dummy.jpg

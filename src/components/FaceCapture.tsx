@@ -24,6 +24,9 @@ export function FaceCapture({ onComplete, className = "" }: FaceCaptureProps) {
     const [messageColor, setMessageColor] = useState("text-stone-400");
     const [boundingBox, setBoundingBox] = useState<{ x: number, y: number, w: number, h: number, frameW: number, frameH: number } | null>(null);
 
+    // Dynamic backend URL to support mobile testing on the same network
+    const backendUrl = `http://${window.location.hostname}:5000`;
+
     const videoRef = useRef<HTMLVideoElement>(null);
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const streamRef = useRef<MediaStream | null>(null);
@@ -85,7 +88,7 @@ export function FaceCapture({ onComplete, className = "" }: FaceCaptureProps) {
         stopCamera();
 
         try {
-            const response = await fetch('http://localhost:5000/api/upload-face', {
+            const response = await fetch(`${backendUrl}/api/upload-face`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ image: imageData })
@@ -145,7 +148,7 @@ export function FaceCapture({ onComplete, className = "" }: FaceCaptureProps) {
             const controller = new AbortController();
             const timeout = setTimeout(() => controller.abort(), 3000);
 
-            const res = await fetch('http://localhost:5000/api/detect-face', {
+            const res = await fetch(`${backendUrl}/api/detect-face`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ image: imageData }),
