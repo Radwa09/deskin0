@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion';
-import { Activity, Clock, ShieldCheck, Droplet } from 'lucide-react';
+import { useAuth } from '../../context/AuthContext';
+import { Activity as ActivityIcon, Clock, ShieldCheck, User, Shield, Settings } from 'lucide-react';
 
 const itemVariants = {
     initial: { opacity: 0, y: 20 },
@@ -7,6 +8,9 @@ const itemVariants = {
 };
 
 export function DashboardOverview({ onNavigate }: { onNavigate: (page: string) => void }) {
+    const { history, activities } = useAuth();
+    const latestScan = history[0];
+
     return (
         <motion.div
             initial="initial"
@@ -22,26 +26,26 @@ export function DashboardOverview({ onNavigate }: { onNavigate: (page: string) =
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <motion.div variants={itemVariants} className="p-8 rounded-[2rem] bg-stone-50 dark:bg-stone-800/50 border border-stone-200 dark:border-stone-800">
                     <div className="w-12 h-12 bg-white dark:bg-stone-800 rounded-2xl flex items-center justify-center text-[#4A3C31] dark:text-stone-300 mb-6 shadow-sm">
-                        <Activity className="w-6 h-6" />
+                        <ActivityIcon className="w-6 h-6" />
                     </div>
                     <div className="text-sm font-bold text-stone-400 uppercase tracking-widest mb-1">Latest Scan</div>
-                    <div className="text-2xl font-serif text-[#3B302B] dark:text-stone-100">Optimal</div>
+                    <div className="text-2xl font-serif text-[#3B302B] dark:text-stone-100">{latestScan?.type || 'No Data'}</div>
                 </motion.div>
 
                 <motion.div variants={itemVariants} className="p-8 rounded-[2rem] bg-stone-50 dark:bg-stone-800/50 border border-stone-200 dark:border-stone-800">
                     <div className="w-12 h-12 bg-white dark:bg-stone-800 rounded-2xl flex items-center justify-center text-[#4A3C31] dark:text-stone-300 mb-6 shadow-sm">
-                        <Droplet className="w-6 h-6" />
+                        <ShieldCheck className="w-6 h-6" />
                     </div>
-                    <div className="text-sm font-bold text-stone-400 uppercase tracking-widest mb-1">Hydration Index</div>
-                    <div className="text-2xl font-serif text-[#3B302B] dark:text-stone-100">78%</div>
+                    <div className="text-sm font-bold text-stone-400 uppercase tracking-widest mb-1">Skin Health Score</div>
+                    <div className="text-2xl font-serif text-[#3B302B] dark:text-stone-100">{latestScan ? `${latestScan.score}/100` : 'N/A'}</div>
                 </motion.div>
 
                 <motion.div variants={itemVariants} className="p-8 rounded-[2rem] bg-stone-50 dark:bg-stone-800/50 border border-stone-200 dark:border-stone-800">
                     <div className="w-12 h-12 bg-white dark:bg-stone-800 rounded-2xl flex items-center justify-center text-[#4A3C31] dark:text-stone-300 mb-6 shadow-sm">
                         <Clock className="w-6 h-6" />
                     </div>
-                    <div className="text-sm font-bold text-stone-400 uppercase tracking-widest mb-1">Next Protocol</div>
-                    <div className="text-2xl font-serif text-[#3B302B] dark:text-stone-100">PM Routine</div>
+                    <div className="text-sm font-bold text-stone-400 uppercase tracking-widest mb-1">Total Analyses</div>
+                    <div className="text-2xl font-serif text-[#3B302B] dark:text-stone-100">{history.length}</div>
                 </motion.div>
             </div>
 
@@ -50,7 +54,7 @@ export function DashboardOverview({ onNavigate }: { onNavigate: (page: string) =
                     <div>
                         <h3 className="text-xs font-bold tracking-[0.3em] uppercase text-stone-100/40 mb-2">Priority Action</h3>
                         <div className="text-2xl font-serif text-stone-50 mb-2">Initiate New Scan</div>
-                        <p className="text-sm text-stone-300 font-light max-w-sm">It's been 14 days since your last dermal analysis. Keep your protocol updated.</p>
+                        <p className="text-sm text-stone-300 font-light max-w-sm">Keep your protocol updated with a new dermal analysis.</p>
                     </div>
                     <button
                         onClick={() => onNavigate('dashboard/analysis')}
@@ -70,16 +74,26 @@ export function DashboardOverview({ onNavigate }: { onNavigate: (page: string) =
                     <h3 className="font-bold text-[#3B302B] dark:text-stone-200">Recent Activity</h3>
                 </div>
                 <div className="space-y-4">
-                    {[
-                        { action: "Completed PM Routine", time: "10 hours ago" },
-                        { action: "Updated Profile Protocol", time: "2 days ago" },
-                        { action: "Purchased Hydration Serum", time: "1 week ago" }
-                    ].map((activity, i) => (
-                        <div key={i} className="flex justify-between items-center py-4 border-b border-stone-100 dark:border-stone-800 last:border-0 last:pb-0">
-                            <span className="text-sm text-stone-600 dark:text-stone-300 font-medium">{activity.action}</span>
-                            <span className="text-xs text-stone-400 font-bold uppercase tracking-wider">{activity.time}</span>
-                        </div>
-                    ))}
+                    {activities.slice(0, 5).map((item, i) => {
+                        const Icon = item.icon === 'User' ? User :
+                                    item.icon === 'Shield' ? Shield :
+                                    item.icon === 'Settings' ? Settings : ActivityIcon;
+                        
+                        return (
+                            <div key={i} className="flex items-center gap-6 py-5 border-b border-stone-100 dark:border-stone-800 last:border-0 last:pb-0 group">
+                                <div className="w-10 h-10 rounded-xl bg-stone-50 dark:bg-stone-800 flex items-center justify-center text-stone-400 group-hover:bg-[#4A3C31] group-hover:text-white transition-all">
+                                    <Icon className="w-5 h-5" />
+                                </div>
+                                <div className="flex-1">
+                                    <div className="flex justify-between items-center mb-1">
+                                        <h4 className="text-sm font-bold text-[#3B302B] dark:text-stone-200">{item.title}</h4>
+                                        <span className="text-[10px] text-stone-400 font-bold uppercase tracking-widest">{item.date}</span>
+                                    </div>
+                                    <p className="text-xs text-stone-500 dark:text-stone-400 font-light">{item.description}</p>
+                                </div>
+                            </div>
+                        );
+                    })}
                 </div>
             </motion.div>
         </motion.div>

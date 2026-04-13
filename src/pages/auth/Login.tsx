@@ -1,20 +1,32 @@
 import { motion } from 'framer-motion';
 import { ArrowLeft, ArrowRight, ShieldCheck } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
+import { useState } from 'react';
 
 export function Login({ onNavigate }: { onNavigate: (page: string) => void }) {
     const { login } = useAuth();
 
-    const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    const [error, setError] = useState<string | null>(null);
+    const [isAuthenticating, setIsAuthenticating] = useState(false);
+
+    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
+        setError(null);
+        setIsAuthenticating(true);
+
         const formData = new FormData(e.currentTarget);
         const email = formData.get('email') as string;
+        const password = formData.get('password') as string;
 
-        // Auto-login as admin if email contains 'admin'
-        const role = email.toLowerCase().includes('admin') ? 'admin' : 'user';
-
-        login(email, role);
-        onNavigate(role === 'admin' ? 'admin' : 'dashboard');
+        try {
+            await login(email, password);
+            const role = email.toLowerCase().includes('admin') ? 'admin' : 'dashboard';
+            onNavigate(role);
+        } catch (err: any) {
+            setError(err.message || 'Authentication failed. Please check your credentials.');
+        } finally {
+            setIsAuthenticating(false);
+        }
     };
 
     return (
@@ -36,6 +48,11 @@ export function Login({ onNavigate }: { onNavigate: (page: string) => void }) {
                 </div>
 
                 <form onSubmit={handleSubmit} className="space-y-6">
+                    {error && (
+                        <div className="p-4 bg-rose-50 dark:bg-rose-900/20 border border-rose-100 dark:border-rose-800 rounded-2xl text-[10px] font-bold text-rose-500 uppercase tracking-widest text-center">
+                            {error}
+                        </div>
+                    )}
                     <div className="space-y-2">
                         <label htmlFor="email" className="text-xs font-bold text-stone-400 uppercase tracking-widest pl-2">Client Email</label>
                         <input
@@ -71,9 +88,10 @@ export function Login({ onNavigate }: { onNavigate: (page: string) => void }) {
 
                     <button
                         type="submit"
-                        className="w-full py-4 bg-[#4A3C31] hover:bg-[#3B302B] text-white rounded-2xl font-bold text-sm transition-all shadow-xl shadow-[#4A3C31]/20 flex items-center justify-center gap-3 group"
+                        disabled={isAuthenticating}
+                        className="w-full py-4 bg-[#4A3C31] hover:bg-[#3B302B] text-white rounded-2xl font-bold text-sm transition-all shadow-xl shadow-[#4A3C31]/20 flex items-center justify-center gap-3 group disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                        Authenticate <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                        {isAuthenticating ? 'Authenticating...' : 'Authenticate'} <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                     </button>
                 </form>
 

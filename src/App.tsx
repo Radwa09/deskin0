@@ -7,9 +7,11 @@ import { ForgotPassword } from './pages/auth/ForgotPassword';
 import { DashboardLayout } from './pages/dashboard/DashboardLayout';
 import { DashboardOverview } from './pages/dashboard/Overview';
 import { DashboardHistory } from './pages/dashboard/History';
-import { DashboardProfile } from './pages/dashboard/Profile';
 import { DashboardSkinAnalysis } from './pages/dashboard/SkinAnalysis';
+import { DashboardProfile } from './pages/dashboard/Profile';
+import { DashboardSettings } from './pages/dashboard/Settings';
 import { FaceCapture } from './components/FaceCapture';
+import { ClinicMap } from './components/ClinicMap';
 import { AdminLayout } from './pages/admin/AdminLayout';
 import { AdminOverview } from './pages/admin/AdminOverview';
 import { AdminUsers } from './pages/admin/AdminUsers';
@@ -207,7 +209,7 @@ export function App() {
               {currentPage === 'dashboard/analysis' && <DashboardSkinAnalysis />}
               {currentPage === 'dashboard/history' && <DashboardHistory />}
               {currentPage === 'dashboard/profile' && <DashboardProfile />}
-              {currentPage === 'dashboard/settings' && <DashboardProfile />} {/* Reusing profile for mock settings */}
+              {currentPage === 'dashboard/settings' && <DashboardSettings />}
             </DashboardLayout>
           )}
 
@@ -299,7 +301,7 @@ export function App() {
 
                 <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
                   {[
-                    { icon: <Camera className="w-7 h-7" />, title: "Scan", page: "scan", desc: "AI-powered dermal topology analysis. Our neural network maps hydration, texture, and structural elasticity with clinical precision.", color: "from-emerald-500/10 to-emerald-500/5" },
+                    { icon: <Camera className="w-7 h-7" />, title: "Scan", page: "scan", desc: "AI-powered dermal topology analysis. Our neural network maps moisture density, texture, and structural elasticity with clinical precision.", color: "from-emerald-500/10 to-emerald-500/5" },
                     { icon: <Sparkles className="w-7 h-7" />, title: "AI", page: "ai", desc: "Engineering revolutionary generative dermal models for predictive visualization and clinical synthesis.", color: "from-indigo-500/10 to-indigo-500/5", isNewTab: true },
                     { icon: <Droplet className="w-7 h-7" />, title: "Routine", page: "routine", desc: "Personalized AM/PM skincare protocols with scientifically curated active compounds tailored to your unique biotype.", color: "from-blue-500/10 to-blue-500/5" },
                     { icon: <Stethoscope className="w-7 h-7" />, title: "Clinic", page: "clinic", desc: "Access our global network of certified partner clinics and compounding labs for professional dermal consultations.", color: "from-violet-500/10 to-violet-500/5" },
@@ -310,7 +312,7 @@ export function App() {
                     <div key={i}
                       onClick={() => {
                         if ((service as any).isNewTab) {
-                          window.open('/ai', '_blank');
+                          navigate('ai');
                         } else {
                           navigate(service.page);
                         }
@@ -407,8 +409,8 @@ export function App() {
                   <h3 className="text-xs font-bold tracking-[0.3em] uppercase text-stone-400 mb-10">Clinical Biomarkers</h3>
                   <div className="space-y-10">
                     {[
-                      { label: "Hydration Index", val: 78, status: "Optimal" },
-                      { label: "Sebum Balance", val: 42, status: "Moderate" },
+                      { label: "Dermal Moisture Index", val: 78, status: "Optimal" },
+                      { label: "Lipid Equilibrium", val: 42, status: "Moderate" },
                       { label: "Dermal Elasticity", val: 89, status: "High" },
                       { label: "UV Sensitivity", val: 24, status: "Low" }
                     ].map((m, i) => (
@@ -474,7 +476,7 @@ export function App() {
                   Personalized <span className="text-[#8C7A6E] italic">Regimen</span>
                 </h2>
                 <p className="text-lg text-stone-500 font-light leading-relaxed">
-                  Your biotype requires a stratified approach to dermal recovery. This protocol focuses on cellular turnover and barrier fortification.
+                  Your biotype requires a stratified approach to dermal recovery. This protocol focuses on cellular turnover and epidermal barrier fortification.
                 </p>
               </div>
 
@@ -606,108 +608,47 @@ export function App() {
               </div>
 
               {/* Interactive Map Wrapper */}
-              <div className="relative aspect-[21/9] w-full rounded-[4rem] overflow-hidden border-[12px] border-white shadow-2xl bg-stone-100 group">
-                {/* Simulated Map Grid */}
-                <div className="absolute inset-0 opacity-20 pointer-events-none" style={{ backgroundImage: 'radial-gradient(#4A3C31 1px, transparent 1px)', backgroundSize: '40px 40px' }} />
+              <ClinicMap />
 
-                {/* Map Markers */}
-                {[
-                  { top: '30%', left: '25%', name: 'Vance Dermal Lab', type: 'Compounding' },
-                  { top: '45%', left: '60%', name: 'Elite Clinic NY', type: 'Diagnostics' },
-                  { top: '20%', left: '75%', name: 'London Skin Inst.', type: 'Research' },
-                  { top: '65%', left: '40%', name: 'Berlin Formulation', type: 'Compounding' }
-                ].map((m, i) => (
-                  <div key={i}
-                    style={{ top: m.top, left: m.left }}
-                    className="absolute z-20"
-                  >
-                    <div className="relative group/marker">
-                      {/* Pulse Effect */}
-                      <div className="absolute -inset-4 bg-[#4A3C31]/20 rounded-full animate-pulse-ring pointer-events-none" />
-
-                      {/* Marker Pin */}
-                      <div className="relative w-8 h-8 bg-[#4A3C31] rounded-2xl flex items-center justify-center text-white shadow-lg cursor-pointer transform hover:scale-125 hover:-translate-y-2 transition-all">
-                        <MapPin className="w-4 h-4" />
-                      </div>
-
-                      {/* Tooltip */}
-                      <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-4 w-48 opacity-0 group-hover/marker:opacity-100 transition-all pointer-events-none">
-                        <div className="bg-[#3B302B] text-white p-4 rounded-2xl shadow-2xl">
-                          <div className="text-[10px] font-bold text-stone-400 uppercase tracking-widest mb-1">{m.type}</div>
-                          <div className="text-sm font-bold">{m.name}</div>
-                          <div className="mt-2 text-[9px] text-stone-100/60 uppercase">Active Node Sec-0{i + 1}</div>
-                        </div>
-                        <div className="w-2 h-2 bg-[#3B302B] rotate-45 absolute -bottom-1 left-1/2 -translate-x-1/2" />
-                      </div>
-                    </div>
-                  </div>
-                ))}
-
-                {/* Map Overlay Info */}
-                <div className="absolute bottom-12 left-12 z-30 space-y-4">
-                  <div className="glass-card-dark p-6 rounded-3xl space-y-2 max-w-xs">
-                    <div className="flex items-center gap-3 text-emerald-500">
-                      <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                      <span className="text-[10px] font-bold uppercase tracking-widest text-emerald-600">Current View: North Hemisphere</span>
-                    </div>
-                    <p className="text-xs text-stone-300 font-light leading-relaxed">
-                      Showing 4/12 active clinical nodes. Select a marker to view available session slots.
-                    </p>
-                  </div>
-                </div>
-
-                <div className="absolute top-12 right-12 z-30 flex gap-4">
-                  <button className="px-6 py-3 bg-white rounded-2xl text-xs font-bold text-[#3B302B] shadow-lg hover:bg-stone-50 transition-all">
-                    Reset View
-                  </button>
-                  <button className="px-6 py-3 bg-[#4A3C31] rounded-2xl text-xs font-bold text-white shadow-lg hover:bg-[#3B302B] transition-all">
-                    List All Clinics
-                  </button>
-                </div>
-              </div>
-
-              {/* Community Results Feed Section */}
+              {/* Verified Dermatologists Section */}
               <div className="space-y-16">
                 <div className="text-center space-y-6">
-                  <h3 className="text-4xl font-serif text-[#3B302B]">Diagnostic <span className="text-[#8C7A6E] italic">Community</span></h3>
+                  <h3 className="text-4xl font-serif text-[#3B302B]">Featured <span className="text-[#8C7A6E] italic">Dermatologists</span></h3>
                   <p className="text-stone-500 font-light max-w-xl mx-auto leading-relaxed">
-                    Explore real-time anonymous analysis results from our global network. Data is anonymized for privacy.
+                    Connect with our board-certified clinical partners for personalized consultations.
                   </p>
                 </div>
 
                 <div className="grid md:grid-cols-3 gap-8">
                   {[
-                    { biotype: 'Resilient Mixed', hydration: 82, time: '2m ago', marker: 'Pore Density Focused' },
-                    { biotype: 'Reactive Dry', hydration: 34, time: '14m ago', marker: 'Barrier Support Required' },
-                    { biotype: 'Balanced Prime', hydration: 91, time: '38m ago', marker: 'Preventative Logic Active' }
-                  ].map((res, i) => (
+                    { name: 'Dr. Sarah Jenkins', specialization: 'Dermatology', number: '+1 (555) 019-2837', availability: 'Available Today' },
+                    { name: 'Dr. Michael Chen', specialization: 'Dermatology', number: '+1 (555) 019-8842', availability: 'Next Week' },
+                    { name: 'Dr. Elena Weiss', specialization: 'Dermatology', number: '+1 (555) 019-7711', availability: 'Available Tomorrow' }
+                  ].map((doc, i) => (
                     <div key={i}
-                      className="p-8 rounded-[2.5rem] bg-white border border-stone-100 shadow-sm space-y-8"
+                      className="p-8 rounded-[2.5rem] bg-white border border-stone-100 shadow-sm space-y-8 hover:shadow-xl transition-all"
                     >
                       <div className="flex justify-between items-center">
                         <div className="w-10 h-10 rounded-2xl bg-stone-100 flex items-center justify-center text-[#4A3C31]">
-                          <Activity className="w-5 h-5" />
+                          <Stethoscope className="w-5 h-5" />
                         </div>
-                        <span className="text-[10px] font-bold text-stone-300 uppercase tracking-widest">{res.time}</span>
+                        <span className="text-[10px] font-bold text-stone-300 uppercase tracking-widest">{doc.availability}</span>
                       </div>
                       <div>
-                        <div className="text-xs text-stone-400 font-bold uppercase tracking-widest mb-1">Dermal Biotype</div>
-                        <div className="text-2xl font-serif text-[#3B302B]">{res.biotype}</div>
+                        <div className="text-xs text-emerald-600 font-bold uppercase tracking-widest mb-1">{doc.specialization}</div>
+                        <div className="text-2xl font-serif text-[#3B302B]">{doc.name}</div>
                       </div>
-                      <div className="space-y-3">
-                        <div className="flex justify-between text-[10px] font-bold uppercase tracking-widest text-[#8C7A6E]">
-                          <span>Hydration Index</span>
-                          <span>{res.hydration}%</span>
-                        </div>
-                        <div className="h-1 w-full bg-stone-50 rounded-full overflow-hidden">
-                          <div
-                            style={{ width: `${res.hydration}%` }}
-                            className="h-full bg-[#4A3C31] transition-all duration-1000"
-                          />
+                      <div className="pt-4 border-t border-stone-50 flex flex-col gap-2">
+                        <div className="text-[10px] font-bold uppercase tracking-widest text-[#8C7A6E]">Contact Number</div>
+                        <div className="text-[#4A3C31] font-medium flex items-center gap-2">
+                          <Phone className="w-4 h-4 text-stone-400" />
+                          {doc.number}
                         </div>
                       </div>
-                      <div className="pt-4 flex items-center gap-3 text-[10px] font-bold text-emerald-600 uppercase tracking-widest">
-                        <Sparkles className="w-3.5 h-3.5" /> {res.marker}
+                      <div className="pt-4 pb-2">
+                        <button className="w-full py-3 bg-stone-50 hover:bg-stone-100 text-[#4A3C31] rounded-2xl text-xs font-bold transition-all border border-stone-200">
+                          Book Consultation
+                        </button>
                       </div>
                     </div>
                   ))}
@@ -888,182 +829,6 @@ export function App() {
             </motion.div>
           )}
 
-          {/* ================= DASHBOARD PAGE ================= */}
-          {currentPage === 'dashboard' && (
-            <motion.div key="dashboard" variants={pageVariants} initial="initial" animate="animate" exit="exit" className="max-w-6xl mx-auto space-y-16">
-              {/* Welcome Section */}
-              <div className="space-y-3">
-                <h2 className="text-4xl md:text-5xl font-serif text-[#3B302B] dark:text-stone-100">
-                  Welcome back, <span className="text-[#8C7A6E] dark:text-[#C2B29F] italic">Jane</span>
-                </h2>
-                <p className="text-lg text-stone-500 dark:text-stone-400 font-light">
-                  Track your skin's progress and analyze your routine
-                </p>
-              </div>
-
-              {/* Stats Cards */}
-              <div className="grid md:grid-cols-3 gap-8">
-                {[
-                  { icon: <BarChart3 className="w-6 h-6" />, value: "12", label: "Total Analyses", badge: "+12%", badgeColor: "text-emerald-600 bg-emerald-50 dark:bg-emerald-900/30 dark:text-emerald-400", iconBg: "bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400" },
-                  { icon: <TrendingUp className="w-6 h-6" />, value: "92%", label: "Current Score", badge: "+5%", badgeColor: "text-emerald-600 bg-emerald-50 dark:bg-emerald-900/30 dark:text-emerald-400", iconBg: "bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400" },
-                  { icon: <Calendar className="w-6 h-6" />, value: "3 months", label: "On SkinE", badge: null, badgeColor: "", iconBg: "bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400" }
-                ].map((stat, i) => (
-                  <div key={i} className="p-8 rounded-[2.5rem] bg-white dark:bg-stone-900 border border-stone-100 dark:border-stone-800 shadow-[0_10px_40px_-10px_rgba(0,0,0,0.04)] dark:shadow-none transition-all">
-                    <div className="flex justify-between items-start mb-6">
-                      <div className={`w-12 h-12 rounded-2xl ${stat.iconBg} flex items-center justify-center`}>
-                        {stat.icon}
-                      </div>
-                      {stat.badge && (
-                        <span className={`text-[10px] font-bold px-3 py-1.5 rounded-full ${stat.badgeColor}`}>{stat.badge}</span>
-                      )}
-                    </div>
-                    <div className="text-3xl font-serif text-[#3B302B] dark:text-stone-100 mb-2">{stat.value}</div>
-                    <div className="text-xs text-stone-400 dark:text-stone-500 font-medium uppercase tracking-widest">{stat.label}</div>
-                  </div>
-                ))}
-              </div>
-
-              {/* New Analysis CTA */}
-              <div className="flex flex-col sm:flex-row items-center justify-between gap-8 p-10 rounded-[2.5rem] bg-stone-50 dark:bg-stone-900 border border-stone-100 dark:border-stone-800"
-              >
-                <div className="space-y-2">
-                  <h3 className="text-xl font-serif font-bold text-[#3B302B] dark:text-stone-100">Ready for your next analysis?</h3>
-                  <p className="text-stone-500 dark:text-stone-400 font-light text-sm">Track your skin's progress and get updated recommendations</p>
-                </div>
-                <button
-                  onClick={() => navigate('scan')}
-                  className="flex items-center gap-3 px-8 py-4 bg-[#4A3C31] dark:bg-stone-800 hover:bg-[#3B302B] dark:hover:bg-stone-700 text-white rounded-full font-bold text-sm transition-all shadow-lg shadow-[#4A3C31]/20 hover:scale-105 active:scale-95 shrink-0"
-                >
-                  <Plus className="w-5 h-5" /> New Analysis
-                </button>
-              </div>
-
-              {/* Analysis History */}
-              <div className="space-y-8">
-                <div className="flex justify-between items-center">
-                  <h3 className="text-2xl font-serif text-[#3B302B] dark:text-stone-100">Analysis History</h3>
-                  <button className="text-sm font-bold text-[#8C7A6E] dark:text-[#C2B29F] hover:text-[#4A3C31] dark:hover:text-stone-200 transition-colors">View All</button>
-                </div>
-                <div className="space-y-4">
-                  {[
-                    { date: "Feb 25, 2026", type: "Full Analysis", score: 92, biotype: "Resilient Mixed-B", status: "Completed" },
-                    { date: "Jan 18, 2026", type: "Quick Scan", score: 87, biotype: "Balanced Prime", status: "Completed" },
-                    { date: "Dec 05, 2025", type: "Full Analysis", score: 81, biotype: "Reactive Dry", status: "Completed" }
-                  ].map((entry, i) => (
-                    <div key={i}
-                      className="flex items-center justify-between p-6 rounded-[2rem] bg-white dark:bg-stone-900 border border-stone-100 dark:border-stone-800 hover:shadow-lg hover:shadow-stone-900/5 dark:hover:bg-stone-800/50 transition-all cursor-pointer group"
-                    >
-                      <div className="flex items-center gap-6">
-                        <div className="w-12 h-12 rounded-2xl bg-stone-50 dark:bg-stone-800 flex items-center justify-center text-[#4A3C31] dark:text-stone-400 border border-stone-100 dark:border-stone-700">
-                          <Activity className="w-5 h-5" />
-                        </div>
-                        <div>
-                          <div className="font-bold text-[#3B302B] dark:text-stone-200 text-sm">{entry.date} · <span className="text-[#8C7A6E] dark:text-[#C2B29F]">{entry.type}</span></div>
-                          <div className="text-xs text-stone-400 dark:text-stone-500 font-medium mt-1">{entry.biotype}</div>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-6">
-                        <div className="text-right hidden sm:block">
-                          <div className="text-lg font-serif font-bold text-[#3B302B] dark:text-stone-200">{entry.score}%</div>
-                          <div className="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold uppercase tracking-widest">{entry.status}</div>
-                        </div>
-                        <ChevronRight className="w-5 h-5 text-stone-300 dark:text-stone-600 group-hover:text-[#4A3C31] dark:group-hover:text-stone-300 transition-colors" />
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </motion.div>
-          )}
-
-          {/* ================= RECOMMENDATIONS PAGE ================= */}
-          {currentPage === 'recommendations' && (
-            <motion.div key="recommendations" variants={pageVariants} initial="initial" animate="animate" exit="exit" className="max-w-5xl mx-auto space-y-16">
-              {/* Header */}
-              <div className="space-y-3">
-                <h2 className="text-4xl md:text-5xl font-serif text-[#3B302B] dark:text-stone-100">
-                  Your Personalized <span className="text-[#8C7A6E] dark:text-[#C2B29F] italic">Routine</span>
-                </h2>
-                <p className="text-lg text-stone-500 dark:text-stone-400 font-light">
-                  Customized skincare recommendations based on your analysis
-                </p>
-              </div>
-
-              {/* Routine Summary Card */}
-              <div className="p-10 rounded-[2.5rem] bg-stone-50 dark:bg-stone-900 border border-stone-100 dark:border-stone-800 space-y-6">
-                <h3 className="text-2xl font-serif text-[#3B302B] dark:text-stone-100">Routine for Combination Skin</h3>
-                <div className="flex flex-wrap gap-3">
-                  {['Dryness Treatment', 'Dark Spot Reduction', 'Texture Improvement'].map((tag, i) => (
-                    <span key={i} className="px-4 py-2 rounded-full text-xs font-bold bg-stone-200/60 dark:bg-stone-800 text-[#3B302B] dark:text-stone-300 border border-stone-200 dark:border-stone-700">
-                      {tag}
-                    </span>
-                  ))}
-                </div>
-                <p className="text-stone-500 dark:text-stone-400 font-light leading-relaxed text-sm">
-                  This routine is designed to balance your skin while addressing specific concerns. Follow consistently for 8-12 weeks to see optimal results.
-                </p>
-              </div>
-
-              {/* Routine Tabs */}
-              <div className="flex justify-center">
-                <div className="p-2 rounded-full bg-stone-100 dark:bg-stone-900 border border-stone-200/50 dark:border-stone-800 flex gap-2">
-                  {[
-                    { id: 'morning', label: 'Morning Routine', icon: <Sun className="w-4 h-4" /> },
-                    { id: 'night', label: 'Night Routine', icon: <Moon className="w-4 h-4" /> }
-                  ].map((tab) => (
-                    <button
-                      key={tab.id}
-                      onClick={() => setActiveTab(tab.id)}
-                      className={`relative px-8 py-3 rounded-full text-sm font-bold transition-all duration-500 overflow-hidden flex items-center gap-3 ${activeTab === tab.id ? 'text-white' : 'text-stone-500 dark:text-stone-400 hover:text-[#3B302B] dark:hover:text-stone-200'
-                        }`}
-                    >
-                      {activeTab === tab.id && (
-                        <motion.div layoutId="rec-tab-bg" className="absolute inset-0 bg-[#4A3C31] dark:bg-stone-700" />
-                      )}
-                      <span className="relative z-10">{tab.icon}</span>
-                      <span className="relative z-10">{tab.label}</span>
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Product Cards */}
-              <div className="space-y-6">
-                {(activeTab === 'morning' ? [
-                  { step: 1, name: "Gentle Cleanser", category: "Cleanser", desc: "Removes impurities without stripping natural oils", why: "For combination skin balance", icon: <Droplet className="w-6 h-6" /> },
-                  { step: 2, name: "Vitamin C Serum", category: "Serum", desc: "Brightens skin and reduces dark spots with L-ascorbic acid", why: "For dark spot reduction", icon: <Sparkles className="w-6 h-6" /> },
-                  { step: 3, name: "Lightweight Moisturizer", category: "Moisturizer", desc: "Hydrates without clogging pores using hyaluronic acid", why: "For balanced hydration", icon: <Heart className="w-6 h-6" /> },
-                  { step: 4, name: "Broad Spectrum SPF 50", category: "Sunscreen", desc: "Protects against UVA/UVB rays and prevents premature aging", why: "Essential daily protection", icon: <ShieldCheck className="w-6 h-6" /> }
-                ] : [
-                  { step: 1, name: "Oil-Based Cleanser", category: "Pre-Cleanse", desc: "Dissolves makeup and SPF while maintaining barrier integrity", why: "For thorough PM cleansing", icon: <Droplet className="w-6 h-6" /> },
-                  { step: 2, name: "Retinol 0.3% Serum", category: "Treatment", desc: "Stimulates cellular turnover and collagen production", why: "For texture improvement", icon: <Star className="w-6 h-6" /> },
-                  { step: 3, name: "Niacinamide 10%", category: "Serum", desc: "Minimizes pores and regulates sebum production", why: "For combination skin balance", icon: <Sparkles className="w-6 h-6" /> },
-                  { step: 4, name: "Ceramide Night Cream", category: "Moisturizer", desc: "Rich overnight repair cream that seals in actives", why: "For barrier repair", icon: <Heart className="w-6 h-6" /> }
-                ]).map((product, i) => (
-                  <div key={`${activeTab}-${i}`}
-                    className="flex items-start gap-8 p-8 rounded-[2.5rem] bg-white dark:bg-stone-900 border border-stone-100 dark:border-stone-800 shadow-[0_10px_40px_-10px_rgba(0,0,0,0.04)] dark:shadow-none hover:shadow-lg hover:shadow-stone-900/5 dark:hover:bg-stone-800/50 transition-all group"
-                  >
-                    <div className="shrink-0 w-14 h-14 rounded-2xl bg-stone-50 dark:bg-stone-800 text-[#8C7A6E] dark:text-[#C2B29F] flex items-center justify-center border border-stone-100 dark:border-stone-700 group-hover:bg-[#4A3C31] group-hover:text-white transition-all">
-                      {product.icon}
-                    </div>
-                    <div className="flex-1 space-y-3">
-                      <div className="flex items-center gap-3">
-                        <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400">{product.step}</span>
-                        <h4 className="text-lg font-serif text-[#3B302B] dark:text-stone-100 font-bold">{product.name}</h4>
-                      </div>
-                      <span className="inline-block px-3 py-1 rounded-full text-[10px] font-bold bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-400 border border-amber-100 dark:border-amber-800/30 uppercase tracking-widest">
-                        {product.category}
-                      </span>
-                      <p className="text-stone-500 dark:text-stone-400 font-light text-sm leading-relaxed">{product.desc}</p>
-                      <div className="text-xs text-stone-400 dark:text-stone-500 font-medium">
-                        Why: <span className="text-[#8C7A6E] dark:text-[#C2B29F]">{product.why}</span>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </motion.div>
-          )}
 
           {/* ================= AI PAGE (COMING SOON) ================= */}
           {currentPage === 'ai' && (

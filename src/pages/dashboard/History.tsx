@@ -1,19 +1,15 @@
 import { motion } from 'framer-motion';
 import { Camera, Calendar, Activity } from 'lucide-react';
 
+import { useAuth } from '../../context/AuthContext';
+
 const itemVariants = {
     initial: { opacity: 0, y: 20 },
     animate: { opacity: 1, y: 0, transition: { duration: 0.5 } }
 };
 
-const mockHistory = [
-    { id: 1, date: 'Mar 10, 2026', type: 'Combination', result: 'Optimal - Barrier Intact' },
-    { id: 2, date: 'Feb 24, 2026', type: 'Combination', result: 'Moderate - Hydration Needed' },
-    { id: 3, date: 'Jan 15, 2026', type: 'Oily', result: 'Sub-Optimal - High Sebum' },
-    { id: 4, date: 'Dec 02, 2025', type: 'Oily', result: 'Sub-Optimal - Inflammation' }
-];
-
 export function DashboardHistory() {
+    const { history } = useAuth();
     return (
         <motion.div
             initial="initial"
@@ -38,7 +34,7 @@ export function DashboardHistory() {
                             </tr>
                         </thead>
                         <tbody>
-                            {mockHistory.map((entry) => (
+                            {history.map((entry) => (
                                 <tr key={entry.id} className="border-b border-stone-100 dark:border-stone-800/50 hover:bg-stone-50/50 dark:hover:bg-stone-800/30 transition-colors">
                                     <td className="p-6 pl-10">
                                         <div className="w-16 h-16 bg-stone-100 dark:bg-stone-800 rounded-2xl flex items-center justify-center border border-stone-200 dark:border-stone-700">

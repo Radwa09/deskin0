@@ -9,11 +9,16 @@ const itemVariants = {
 };
 
 export function DashboardProfile() {
-    const { user } = useAuth();
+    const { user, updateProfile } = useAuth();
     const [saved, setSaved] = useState(false);
+    
+    // Form states
+    const [name, setName] = useState(user?.name || '');
+    const [email, setEmail] = useState(user?.email || '');
 
     const handleSave = (e: React.FormEvent) => {
         e.preventDefault();
+        updateProfile({ name, email }, 'Dermal Profile Updated');
         setSaved(true);
         setTimeout(() => setSaved(false), 3000);
     };
@@ -55,7 +60,8 @@ export function DashboardProfile() {
                             <input
                                 type="text"
                                 id="name"
-                                defaultValue={user?.name}
+                                value={name}
+                                onChange={(e) => setName(e.target.value)}
                                 className="w-full px-6 py-4 bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-[#8C7A6E]/50 focus:border-[#8C7A6E] transition-all dark:text-stone-200"
                             />
                         </div>
@@ -64,7 +70,8 @@ export function DashboardProfile() {
                             <input
                                 type="email"
                                 id="email"
-                                defaultValue={user?.email}
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
                                 className="w-full px-6 py-4 bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-[#8C7A6E]/50 focus:border-[#8C7A6E] transition-all dark:text-stone-200 text-stone-400"
                             />
                         </div>

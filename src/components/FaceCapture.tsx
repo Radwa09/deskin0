@@ -1,6 +1,7 @@
 import { Camera, Loader2, Maximize, ScanFace } from 'lucide-react';
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
+import { useAuth } from '../context/AuthContext';
 
 // PURE HTML5 CAMERA + PYTHON OPENCV INTEGRATION
 // Replicates face_detected.ipynb logic:
@@ -19,6 +20,7 @@ const CENTER_TOLERANCE = 50;
 const CAPTURE_DELAY = 2; // seconds
 
 export function FaceCapture({ onComplete, className = "" }: FaceCaptureProps) {
+    const { addAnalysisResult } = useAuth();
     const [status, setStatus] = useState<'idle' | 'loading' | 'active' | 'uploading' | 'error'>('idle');
     const [message, setMessage] = useState("Awaiting Input");
     const [messageColor, setMessageColor] = useState("text-stone-400");
@@ -96,15 +98,19 @@ export function FaceCapture({ onComplete, className = "" }: FaceCaptureProps) {
 
             if (!response.ok) throw new Error('Upload failed');
 
-            const result = await response.json();
-            console.log('📸 Image saved:', result.filepath);
+            const uploadResult = await response.json();
+            console.log('📸 Image saved:', uploadResult.filepath);
+
+            const result = {
+                type: 'Combination',
+                result: 'Optimal - Barrier Intact',
+                score: 84 + Math.floor(Math.random() * 10)
+            };
+
+            addAnalysisResult(result);
 
             setTimeout(() => {
-                onComplete({
-                    type: 'Combination',
-                    confidence: '96.4%',
-                    recommendation: 'Targeted hydration on cheeks, salicylic acid on T-zone.'
-                });
+                onComplete(result);
             }, 1000);
         } catch (err: any) {
             console.error('Upload error:', err);
@@ -294,7 +300,7 @@ export function FaceCapture({ onComplete, className = "" }: FaceCaptureProps) {
 
                         {/* Bounding box overlay */}
                         {boundingBox && (
-                            <div className="absolute inset-0 pointer-events-none origin-center -scale-x-100">
+                            <div className="absolute inset-0 pointer-events-none">
                                 <div
                                     className="absolute border-[3px] rounded-lg transition-all ease-linear duration-150"
                                     style={{
